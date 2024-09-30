@@ -12,8 +12,8 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
-    "declaration": true,
-    "typeRoots": ["./dist/index.d.ts"],
+    // "declaration": true,
+    // "typeRoots": ["./dist/index.d.ts"],
     "jsx": "react-jsx",
 
     /* Linting */
@@ -22,5 +22,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "./index.ts"]
+  // "include": ["src", "./index.ts"]
+  "include": ["src"]
 }
