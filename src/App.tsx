@@ -1,11 +1,15 @@
-// import './App.css';
-import { Button } from './components'
+import useRouteElements from "./useRouterElement"
 
-function App() {
 
-  return <div className='App'>
-    <Button />
-  </div>
+
+export default function App() {
+
+  const rootElement = useRouteElements()
+
+  return (
+    <div className="px-5 py-5 text-black">
+      {rootElement}
+    </div>
+  )
 }
 
-export default App
