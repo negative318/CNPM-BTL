@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 
-html {
+/* html {
   height: 100%;
   line-height: 1.2;
   overflow-y: scroll;
@@ -21,4 +21,4 @@ input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   transition-delay: 9999s;
   -webkit-text-fill-color: #0096c7;
-}
+} */
