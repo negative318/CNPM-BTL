@@ -7,6 +7,7 @@ export default {
         mainBg: '#fff',
         textBaseColor: '#ccc',
 
+
         //? WEB COLORS
         webColor100: '#CAF0F8',
         webColor200: '#ADE8F4',

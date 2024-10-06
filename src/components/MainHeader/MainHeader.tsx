@@ -104,15 +104,18 @@ export default function MainHeader() {
           </div>
   
           <div className='flex items-center justify-end '>
-            {isAuthenticated && (
-              <NavLink
-                to={mainPath.login}
-                className='text-lightText flex h-[70%] rounded-lg items-center space-x-2 px-6 hover:bg-hoveringBg desktop:text-lg'
-              >
-                <FontAwesomeIcon icon={faUser} />
-                <p className='mt-1 font-semibold uppercase'>Đăng nhập</p>
-              </NavLink>
-            )}
+          {isAuthenticated && (
+  <div className="flex space-x-4">
+    {/* Nút Đăng nhập */}
+    <NavLink
+  to={mainPath.login}
+  className='bg-red-500 text-black flex h-[42px] rounded-full items-center justify-center space-x-2 px-6 pb-1 hover:bg-red-600 desktop:text-lg'
+>
+  <FontAwesomeIcon icon={faUser} />
+  <p className='mt-1 font-semibold uppercase'>Đăng nhập</p>
+</NavLink>
+  </div>
+)}
             {/* {isAuthenticated && <PersonalPopover />} */}
           </div>
         </div>
