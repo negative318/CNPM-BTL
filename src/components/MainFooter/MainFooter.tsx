@@ -5,7 +5,7 @@ export default function MainFooter() {
   return (
     <div className="mt-10 bg-blue-200 border-none">
       <div className="container flex items-center justify-between p-8 mx-auto">
-        {/* Left section */}
+
         <div className="w-1/2">
           <div className="text-3xl font-bold">Smart Printing Service</div>
           <div className="mt-4 text-lg">Customer service shouldn't just</div>
@@ -13,7 +13,6 @@ export default function MainFooter() {
           <div className="text-lg">the entire company</div>
         </div>
 
-        {/* Right section (Contact Info) */}
         <div className="w-1/2">
           <div className="text-2xl font-bold">Contact Us</div>
           <div className="flex items-center mt-4">

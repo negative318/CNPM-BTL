@@ -24,12 +24,12 @@ export default function MainHeader() {
   
     return (
       <div
-        className='flex items-center justify-center w-full h-full bg-webColor700 text-lightText'
+        className='items-center justify-center w-full h-full bg-webColor500 text-lightText'
         style={{ minHeight: 'inherit' }}
       >
         <div className='container flex justify-between w-full h-full'>
           <div className='flex justify-start py-2 space-x-2 '>
-            <img className='h-12 rounded bg-slate-50' src='\images\HCMCUT_logo.png' alt='logo' />
+            <img className='h-12 rounded' src='\images\HCMCUT_logo.png' alt='logo' />
             <div className='flex items-center text-lg font-bold uppercase desktop:text-2xl'>CNPM</div>
           </div>
   
