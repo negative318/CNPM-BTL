@@ -13,7 +13,7 @@ interface AppContextInterface {
 
 
 const initialAppContext: AppContextInterface = {
-    isAuthenticated: Boolean(true),
+    isAuthenticated: Boolean(false),
     setIsAuthenticated: () => null,
     loadingPage: false,
     setLoadingPage: () => null,
