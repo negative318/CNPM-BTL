@@ -1,5 +1,5 @@
-import ProfileForm from "./components/ProfileForm";
-import ProfileSideBar from "./components/ProfileSideBar";
+import ProfileForm from '../../components/ProfileForm'
+import ProfileSideBar from '../../components/ProfileSideBar'
 
 export default function AccountSettingView() {
   return (
