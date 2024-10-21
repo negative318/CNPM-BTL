@@ -3,6 +3,7 @@ import mainPath from "./constants/path";
 import MainLayout from "./layouts/MainLayouts/MainLayouts";
 import HomePage from "./pages/HomePage";
 import AccountSettingView from "./pages/Account/layouts/AccountSettingView";
+import ProfileView from "./pages/Account/layouts/ProfileView";
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -24,6 +25,15 @@ export default function useRouteElements() {
         </MainLayout>
       ),
     },
+    {
+      index: true,
+      path: mainPath.profile,
+      element: (
+        <MainLayout>
+          <ProfileView />
+        </MainLayout>
+      ),
+    }
   ]);
   return routeElements;
 }
