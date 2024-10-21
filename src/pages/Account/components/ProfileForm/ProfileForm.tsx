@@ -28,40 +28,40 @@ export default function ProfileForm() {
         </div>
         <div className="flex items-center justify-between gap-10 mb-3 ">
           <label
-            htmlFor="email"
+            htmlFor="Current-password"
             className="text-sm font-medium text-gray-700 mb-2 whitespace-nowrap min-w-[120px]"
           >
             Current Password*
           </label>
           <input
-            type="email"
-            id="email"
+            type="password"
+            id="Current-password"
             className="flex-grow px-4 py-2 border border-gray-300 rounded-md"
           />
         </div>
         <div className="flex items-center justify-between gap-10 mb-3">
           <label
-            htmlFor="email"
+            htmlFor="New-password"
             className="text-sm font-medium text-gray-700 mb-2 whitespace-nowrap min-w-[120px]"
           >
             New Password*
           </label>
           <input
-            type="email"
-            id="email"
+            type="password"
+            id="New-password"
             className="flex-grow px-4 py-2 border border-gray-300 rounded-md"
           />
         </div>
         <div className="flex items-center justify-between gap-10 mb-3">
           <label
-            htmlFor="email"
+            htmlFor="Retype-password"
             className="text-sm font-medium text-gray-700 mb-2 whitespace-nowrap min-w-[120px]"
           >
             Retype Password*
           </label>
           <input
-            type="email"
-            id="email"
+            type="password"
+            id="Retype-password"
             className="flex-grow px-4 py-2 border border-gray-300 rounded-md"
           />
         </div>

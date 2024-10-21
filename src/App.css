@@ -6,6 +6,7 @@
   text-align: center;
 }
 
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -64,3 +65,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* tailwind.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
