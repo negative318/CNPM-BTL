@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import LoadingPage from './components/LoadingPage'
 import { Suspense, useContext } from 'react'
 import { AppContext } from './contexts/app.context'
+import PrintingPage from './pages/PrintingPage'
 
 
 
@@ -37,7 +38,18 @@ export default function useRouteElements(){
             path: '',
             element: <RejectedRoute />,
             children: [{ path: mainPath.login, element: <LoginPage /> }]
-          },
+        },
+        {
+          index: true,
+          path: mainPath.printing,
+          element: (
+            <MainLayout>
+              <PrintingPage />
+            </MainLayout>
+          )
+        },
+    
+        
     ])
 
     return routeElements
