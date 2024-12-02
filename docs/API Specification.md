@@ -133,7 +133,7 @@
         "default_paper_number": 12345,
         "eventTime": "2024-12-02 10:30:00"
       }
-      ```
+    ```
 - **Access**:
     - **403 Forbidden**: If the user does not have access.
 
@@ -152,7 +152,7 @@
         "purchased_paper_number": 12345,
         "eventTime": "2024-12-02 10:30:00"
       }
-      ```
+    ```
 - **Access**:
     - **403 Forbidden**: If the user does not have access.
 
@@ -171,7 +171,7 @@
         "total_paper_number": 12345,
         "eventTime": "2024-12-02 10:30:00"
       }
-      ```
+    ```
 - **Access**:
     - **403 Forbidden**: If the user does not have access.
 
