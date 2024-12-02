@@ -1,88 +1,132 @@
-import { Link } from "react-router-dom"
-import mainPath from "../../constants/path"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCaretLeft } from "@fortawesome/free-solid-svg-icons"
-import MainFooter from "../../components/MainFooter"
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import mainPath from "../../constants/path";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretLeft } from "@fortawesome/free-solid-svg-icons";
+import MainFooter from "../../components/MainFooter";
+import { useContext, useState } from "react";
+import { AppContext } from "../../contexts/app.context";
+import axios from "axios";
 
 export default function LoginPage() {
-  
+  const { setIsAuthenticated, setProfile } = useContext(AppContext);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate(); // Khởi tạo navigate
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      // Gửi yêu cầu tới API
+      const response = await axios.post(
+        "http://localhost:8080/api/v1/auth/login",
+        {
+          email,
+          password,
+        }
+      );
+
+      setIsAuthenticated(true);
+      setProfile({
+        _id: response.data.id,
+        name: `${response.data.firstName} ${response.data.lastName}`,
+        email: response.data.email,
+        role: response.data.roles[0]?.id || 0,
+        jwtToken: response.data.jwtToken
+      });
+
+
+      
+      navigate(mainPath.home);
+    } catch (err) {
+      setError("Tên đăng nhập hoặc mật khẩu không đúng.");
+    }
+  };
+
   return (
-    <div className='flex flex-col justify-between h-full min-h-full shrink-0' style={{ minHeight: 'inherit' }}>
-      <div className=''>
-        <div className='w-full bg-webColor700'>
-          <div className='container'>
-            <div className='flex justify-start w-full'>
-              <Link to={mainPath.home} className='flex px-6 py-4 space-x-2 text-lightText hover:bg-hoveringBg shrink'>
+    <div
+      className="flex flex-col justify-between h-full min-h-full"
+      style={{ minHeight: "inherit" }}
+    >
+      <div>
+        {/* Thanh điều hướng */}
+        <div className="w-full bg-webColor700">
+          <div className="container">
+            <div className="flex justify-start w-full">
+              <Link
+                to={mainPath.home}
+                className="flex px-6 py-4 space-x-2 text-lightText hover:bg-hoveringBg"
+              >
                 <FontAwesomeIcon icon={faCaretLeft} />
-                <p className='font-semibold uppercase'>Trang chủ</p>
+                <p className="font-semibold uppercase">Trang chủ</p>
               </Link>
             </div>
           </div>
         </div>
 
-        <div className='container'>
-          <div className='flex items-start justify-center py-10'>
-            <div className='w-10/12 tablet:w-8/12 desktop:w-6/12'>
-            <div></div>
-              <form
-                className='p-5 duration-200 shadow-lg md:p-10 rounded-xl bg-webColor100'
-                // onSubmit={onSubmit}
-                noValidate
-              >
-                <div className='text-2xl font-semibold text-center uppercase text-primaryText'>Đăng nhập</div>
-
-                {/* <AccountInput
-                  name='username'
-                  register={register}
-                  type='text'
-                  className='mt-8 autofill:text-darkText autofill:dark:text-lightText'
-                  errorMessage={errors.username?.message}
-                  labelName='Tài khoản'
-                  required
-                  autoComplete='on'
-                  svgData={
-                    <>
-                      <path d='M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z' />
-                      <path d='M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z' />
-                    </>
-                  }
-                /> */}
-
-                {/* <AccountInput
-                  name='password'
-                  register={register}
-                  type='password'
-                  className='mt-3'
-                  errorMessage={errors.password?.message}
-                  labelName='Mật khẩu'
-                  required
-                  isPasswordInput
-                  svgData={
-                    <path
-                      fillRule='evenodd'
-                      d='M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z'
-                      clipRule='evenodd'
-                    />
-                  }
-                /> */}
-
-                <div className='mt-2 text-base lg:text-lg'>
-                  {/* <button
-                    className='flex items-center justify-center w-full py-2 uppercase lg:py-3'
-                    type='submit'
-                    isLoading={loginAccountMutation.isPending}
-                    disabled={loginAccountMutation.isPending}
-                  >
-                    Đăng nhập
-                  </button> */}
-                </div>
-              </form>
+        {/* Phần chính: Đăng nhập */}
+        <div className="container flex items-center justify-center py-10 min-h-[80vh]">
+          <div className="w-full max-w-md p-5 bg-white shadow-lg rounded-xl">
+            <div className="mb-6 text-center">
+              <h2 className="text-2xl font-bold text-gray-800 uppercase">
+                Đăng nhập tài khoản
+              </h2>
             </div>
+
+            {/* Form đăng nhập */}
+            <form noValidate onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label
+                  htmlFor="email"
+                  className="block mb-2 font-medium text-gray-600"
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  placeholder="Nhập email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="mb-6">
+                <label
+                  htmlFor="password"
+                  className="block mb-2 font-medium text-gray-600"
+                >
+                  Mật khẩu
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  placeholder="Nhập mật khẩu"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {error && <p className="mb-4 text-red-500">{error}</p>}
+
+              <button
+                type="submit"
+                className="w-full py-2 text-white bg-red-500 rounded-lg hover:bg-red-600 focus:outline-none"
+              >
+                Đăng nhập
+              </button>
+            </form>
           </div>
         </div>
       </div>
 
       <MainFooter />
     </div>
-  )
+  );
 }

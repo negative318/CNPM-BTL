@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import ScrollToTop from './ScrollToTop.tsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.tsx'
-
+import { AppProvider } from './contexts/app.context.tsx'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -21,7 +21,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <ScrollToTop>
         <QueryClientProvider client={queryClient}>
           <ErrorBoundary>
+            <AppProvider> {/* Bao bọc ứng dụng với AppContext */}
             <App />
+            </AppProvider>
           </ErrorBoundary>  
         </QueryClientProvider>
       </ScrollToTop>

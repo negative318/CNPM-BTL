@@ -2,13 +2,15 @@
 
 export interface User {
   _id: string
-  status: number
-  created_at: string
-  updated_at: string
-  role: number
   name: string
-  phone: string
-  address: string
+  email: string
+  role: number
+  jwtToken: string
+  // status: number
+  // created_at: string
+  // updated_at: string
+  // phone: string
+  // address: string
 }
 
 export interface UserList {
