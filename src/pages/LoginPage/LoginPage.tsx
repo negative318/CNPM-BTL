@@ -8,35 +8,35 @@ import { AppContext } from "../../contexts/app.context";
 import axios from "axios";
 
 export default function LoginPage() {
-  const { setIsAuthenticated, setProfile } = useContext(AppContext);
+  const {isAuthenticated, setIsAuthenticated, profile, setProfile } = useContext(AppContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Khởi tạo navigate
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      // Gửi yêu cầu tới API
-      const response = await axios.post(
-        "http://localhost:8080/api/v1/auth/login",
-        {
-          email,
-          password,
-        }
-      );
-
-      setIsAuthenticated(true);
-      setProfile({
+      const response = await axios.post("http://localhost:8080/api/v1/auth/login", {
+        email,
+        password,
+      });
+  
+      const userData = {
         _id: response.data.id,
         name: `${response.data.firstName} ${response.data.lastName}`,
         email: response.data.email,
         role: response.data.roles[0]?.id || 0,
-        jwtToken: response.data.jwtToken
-      });
-
-
+        jwtToken: response.data.jwtToken,
+      };
+  
       
+      localStorage.setItem("userProfile", JSON.stringify(userData));
+      localStorage.setItem("jwtToken", userData.jwtToken);
+  
+      setIsAuthenticated(true);
+      setProfile(userData);
+  
       navigate(mainPath.home);
     } catch (err) {
       setError("Tên đăng nhập hoặc mật khẩu không đúng.");

@@ -1,5 +1,5 @@
 import { User } from "../types/user.type"
-import { createContext, useState } from "react"
+import { createContext, useEffect, useState } from "react"
 // interface PrintConfig{
 //     pagesize:number
 // }
@@ -36,12 +36,25 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [profile, setProfile] = useState<User | null>(null)
     // const [printConfig, setPrintConfig] = useState<PrintConfig | null>(null)
   
-    // Hàm xử lý đăng xuất
     const handleLogout = () => {
-      setIsAuthenticated(false)
-      setProfile(null)
-      localStorage.removeItem("jwtToken") // Xóa token khỏi localStorage
-    }
+      setIsAuthenticated(false);
+      setProfile(null);
+      localStorage.removeItem("userProfile");
+      localStorage.removeItem("jwtToken");
+    };
+
+
+    useEffect(() => {
+      const storedProfile = localStorage.getItem("userProfile");
+      if (storedProfile) {
+        const parsedProfile = JSON.parse(storedProfile);
+        setProfile(parsedProfile);
+        setIsAuthenticated(true);
+      }
+      setLoadingPage(false);
+    }, []);
+
+
   
     return (
       <AppContext.Provider
