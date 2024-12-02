@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import mainPath from "../../constants/path";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretLeft } from "@fortawesome/free-solid-svg-icons";
@@ -8,7 +8,7 @@ import { AppContext } from "../../contexts/app.context";
 import axios from "axios";
 
 export default function LoginPage() {
-  const {isAuthenticated, setIsAuthenticated, profile, setProfile } = useContext(AppContext);
+  const { setIsAuthenticated, setProfile, setLoadingPage } = useContext(AppContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,6 +16,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoadingPage(true);
     try {
       const response = await axios.post("http://localhost:8080/api/v1/auth/login", {
         email,
@@ -36,6 +37,7 @@ export default function LoginPage() {
   
       setIsAuthenticated(true);
       setProfile(userData);
+      setLoadingPage(false);
   
       navigate(mainPath.home);
     } catch (err) {
