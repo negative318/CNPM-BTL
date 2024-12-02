@@ -111,7 +111,7 @@ export default function PrintingPage() {
         setStep(newStep)
       } else if (step === 3 && printSettings && printSettings.copies > 0) {
         setStep(newStep);
-    }
+      }
     }
   }
 
@@ -433,23 +433,27 @@ export default function PrintingPage() {
       </Card>
 
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent>
+        <DialogContent className="p-6 bg-white rounded-lg shadow-lg">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-blue-600">
               <Check className="w-6 h-6 text-green-500" />
               Yêu cầu in ấn thành công
             </DialogTitle>
             <DialogDescription className="pt-4">
               <div className="space-y-4">
-                <div className="p-4 border rounded-lg bg-muted">
+                <div className="p-4 border rounded-lg shadow-sm bg-blue-50">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium">Số trang:</div>
-                    <div className="text-sm text-right">{uploadedFiles.reduce((acc, file) => acc + 1, 0) * printSettings.copies} trang</div>
-                    <div className="text-sm font-medium">Mã tham chiếu:</div>
-                    <div className="font-mono text-sm text-right">{referenceCode}</div>
+                    <div className="text-sm font-medium text-gray-700">Số trang:</div>
+                    <div className="text-sm font-semibold text-right text-gray-900">
+                      {uploadedFiles.reduce((acc, file) => acc + 1, 0) * printSettings.copies} trang
+                    </div>
+                    <div className="text-sm font-medium text-gray-700">Mã tham chiếu:</div>
+                    <div className="font-mono text-sm text-right text-blue-600">
+                      {referenceCode}
+                    </div>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-600">
                   Vui lòng lưu lại mã tham chiếu để theo dõi trạng thái in ấn của bạn.
                 </p>
               </div>
@@ -457,6 +461,8 @@ export default function PrintingPage() {
           </DialogHeader>
         </DialogContent>
       </Dialog>
+
+
     </div>
   )
 }
