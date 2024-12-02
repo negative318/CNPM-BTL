@@ -1,24 +1,28 @@
+// import { useState } from "react";
+
+import { useState } from "react";
+
 export default function ProfileSideBar() {
+  // const [activeIndex, setActiveIndex] = useState(-1);
+  const [sidebarItems,setSidebarItems] = useState(['ProfileDuy','Account Setting','Printing Log','Logout']);
   return (
-    <div className="flex flex-col justify-center items-center">
+    <div className="flex flex-col items-center justify-center">
       <img
         src="https://cellphones.com.vn/sforum/wp-content/uploads/2024/02/avatar-anh-meo-cute-1.jpg"
         alt="User Avatar"
-        className="w-32 h-32 rounded-full mb-4"
+        className="w-32 h-32 mb-4 rounded-full"
       />
       <h2 className="text-lg font-bold">John Doe</h2>
       <div className="left-1/2 z-10 mt-5 flex max-w-max min-w-[250px]">
-        <div className="max-w-md flex-auto overflow-hidden rounded-3xl text-sm leading-6">
+        <div className="flex-auto max-w-md overflow-hidden text-sm leading-6 rounded-3xl">
           <div className="p-2">
-            <div className="group relative flex gap-x-6 rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
-              <div className="font-semibold text-gray-900">Profile</div>
-            </div>
-            <div className="group relative flex gap-x-6 rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
-              <div className="font-semibold text-gray-900">Account Setting</div>
-            </div>
-            <div className="group relative flex gap-x-6 rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
-              <div className="font-semibold text-gray-900">Printing Log</div>
-            </div>
+            {sidebarItems.map((item, index: number) => {
+              return (
+                <div className="relative flex p-4 rounded-lg cursor-pointer group gap-x-6 hover:bg-gray-50" key={index}>
+                  <div className={`font-semibold text-gray-900`} onClick={() => { }}>{item}</div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

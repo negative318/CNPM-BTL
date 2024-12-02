@@ -6,6 +6,7 @@ const mainPath = {
     help: "/help",
     accountSetting: "/account-setting",
     profile: "/profile",
+    
 } as const;
 
 export default mainPath;

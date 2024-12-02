@@ -1,6 +1,9 @@
+
+import './ProfileForm1.css'
+
 export default function ProfileForm1() {
   return (
-    <form className="p-6 mx-auto space-y-6 bg-white rounded-lg border border-t-[#ccc]">
+    <form className="p-6 mx-auto space-y-6 bg-white rounded-lg border border-t-[#ccc] profileForm1-container">
       <div className="flex flex-col items-center justify-center mb-14">
         <div className="text-sm font-medium text-[24px] text-gray-700">
           Public Profile
@@ -29,7 +32,7 @@ export default function ProfileForm1() {
             type="text"
             placeholder="Enter your full name"
             id="full-name"
-            className="flex-grow px-4 py-2 border border-gray-300 rounded-md"
+            className="flex-grow px-4 py-2 border border-gray-300 rounded-md input-infor-text"
           />
       </div>
       <div className="flex items-center justify-between gap-10 mb-3">
@@ -96,10 +99,11 @@ export default function ProfileForm1() {
             Role:
           </label>
           <input
-            type="text"
+          type="text"
+          // style={{fontSize:textsize}}
           id="role"
           placeholder="Enter your role"
-            className="flex-grow px-4 py-2 border border-gray-300 rounded-md"
+            className="flex-grow px-4 py-2 border border-gray-300 rounded-md input-infor-text"
           />
         </div>
     </form>
