@@ -1,4 +1,5 @@
-import { useState } from "react"
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
 import { ChevronLeft, Check } from 'lucide-react'
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
@@ -13,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../components/ui/dialog"
+import { AppContext } from '../../contexts/app.context';
 
 interface Campus {
   id: string
@@ -41,9 +43,20 @@ interface PrintSettings {
 }
 
 export default function PrintingPage() {
+  const {profile} = useContext(AppContext);
   const [step, setStep] = useState(1)
-  const [selectedCampus, setSelectedCampus] = useState<string | null>(null)
-  const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null)
+  const [campuses, setCampuses] = useState([
+    { label: "Cơ sở Lý Thường Kiệt", value: "LTK" },
+    { label: "Cơ sở Dĩ An Bình Dương", value: "BD" },
+  ]);
+  const [selectedCampus, setSelectedCampus] = useState("");
+
+  const [buildings, setBuildings] = useState([]);
+  const [selectedBuilding, setSelectedBuilding] = useState("");
+
+  const [printers, setPrinters] = useState([]);
+
+  
   const [selectedPrinter, setSelectedPrinter] = useState<string | null>(null)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
@@ -56,26 +69,7 @@ export default function PrintingPage() {
     pages: "all",
   })
 
-  const campuses: Campus[] = [
-    { id: "1", name: "Cơ sở Lý Thường Kiệt" },
-    { id: "2", name: "Cơ sở Dĩ An Bình Dương" },
-  ]
 
-  const buildings: Building[] = [
-    { id: "H4", name: "H4", campusId: "1" },
-    { id: "H5", name: "H5", campusId: "1" },
-    { id: "DA1", name: "DA1", campusId: "2" },
-    { id: "DA2", name: "DA2", campusId: "2" },
-  ]
-
-  const printers: Printer[] = [
-    { id: "1", name: "Máy in tầng 1 H4", buildingId: "H4", status: "available" },
-    { id: "2", name: "Máy in tầng 2 H4", buildingId: "H4", status: "available" },
-    { id: "3", name: "Máy in tầng 6 H4", buildingId: "H4", status: "maintenance" },
-    { id: "4", name: "Máy in tầng 1 H5", buildingId: "H5", status: "available" },
-    { id: "5", name: "Máy in tầng 1 DA1", buildingId: "DA1", status: "available" },
-    { id: "6", name: "Máy in tầng 2 DA2", buildingId: "DA2", status: "available" },
-  ]
 
   const [pdfFile, setPdfFile] = useState<string | null>(null);
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,106 +109,132 @@ export default function PrintingPage() {
     }
   }
 
+
+  useEffect(() => {
+    if (selectedCampus) {
+      console.log(profile?.jwtToken)
+      axios
+        .get(`http://localhost:8080/api/v1/printers/status?location=${selectedCampus}&pageNumber=0&pageSize=10`, {
+          headers: {
+            Authorization: `Bearer Token ${profile?.jwtToken}`,
+          },
+        })
+        .then((response) => {
+          const data = response.data.content;
+          console.log(data)
+          setBuildings(data.buildings || []);
+          setPrinters(data.printers || []);
+        })
+        .catch((error) => {
+          console.error("Lỗi khi tải dữ liệu:", error);
+        });
+    } else {
+      // Reset khi không có campus được chọn
+      setBuildings([]);
+      setPrinters([]);
+    }
+  }, [selectedCampus]); // Chỉ chạy khi selectedCampus thay đổi
+
+
   const renderStepContent = () => {
     switch (step) {
       case 1:
-  return (
-    <div className="space-y-8">
-      {/* Chọn cơ sở */}
-      <div className="space-y-4">
-        <Label className="text-lg font-medium">Chọn cơ sở</Label>
-        <div className="flex flex-wrap gap-4">
-          <RadioGroup
-            value={selectedCampus || ""}
-            onValueChange={(value) => {
-              setSelectedCampus(value)
-              setSelectedBuilding(null)
-              setSelectedPrinter(null)
-            }}
-            className="flex flex-wrap gap-4"
-          >
-            {campuses.map((campus) => (
-              <div key={campus.id} className="flex items-center space-x-2">
-                <RadioGroupItem value={campus.id} id={`campus-${campus.id}`} />
-                <Label htmlFor={`campus-${campus.id}`} className="cursor-pointer">
-                  {campus.name}
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </div>
-      </div>
-
-      {/* Chọn tòa nhà */}
-      {selectedCampus && (
-        <div className="space-y-4">
-          <Label className="text-lg font-medium">Chọn tòa nhà</Label>
-          <Select
-            value={selectedBuilding || ""}
-            onValueChange={(value) => {
-              setSelectedBuilding(value)
-              setSelectedPrinter(null)
-            }}
-          >
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue placeholder="Chọn tòa nhà" />
-            </SelectTrigger>
-            <SelectContent>
-              {buildings
-                .filter((building) => building.campusId === selectedCampus)
-                .map((building) => (
-                  <SelectItem key={building.id} value={building.id}>
-                    {building.name}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Chọn máy in */}
-      {selectedBuilding && (
-  <div className="space-y-4">
-    <Label className="text-lg font-medium">Chọn máy in</Label>
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {printers
-        .filter((printer) => printer.buildingId === selectedBuilding)
-        .map((printer) => {
-          const isSelected = selectedPrinter === printer.id;
-          const isDisabled = printer.status === "maintenance";
-
-          return (
-            <Button
-              key={printer.id}
-              variant={isSelected ? "default" : "outline"}
-              className={`flex-col items-start h-auto p-4 space-y-2 border-2 rounded-lg transition-colors ${
-                isDisabled
-                  ? "opacity-50 cursor-not-allowed bg-gray-200 border-gray-300"
-                  : isSelected
-                  ? "bg-blue-100 border-blue-500 hover:bg-blue-200"
-                  : "bg-white border-gray-300 hover:bg-gray-100"
-              }`}
-              onClick={() => setSelectedPrinter(printer.id)}
-              disabled={isDisabled}
+      return (
+        <div className="space-y-8">
+          {/* Chọn cơ sở */}
+          <div className="space-y-4">
+            <Label className="text-lg font-medium">Chọn cơ sở</Label>
+            <RadioGroup
+              value={selectedCampus || ""}
+              onValueChange={(value) => {
+                setSelectedCampus(value); // Cập nhật campus
+                setSelectedBuilding(null); // Reset building selection
+                setSelectedPrinter(null); // Reset printer selection
+              }}
+              className="flex flex-wrap gap-4"
             >
-              <div className={`font-semibold ${isSelected ? "text-blue-600" : ""}`}>
-                {printer.name}
-              </div>
-              <div
-                className={`text-sm ${
-                  printer.status === "available" ? "text-green-500" : "text-red-500"
-                }`}
+              {campuses.map((campus) => (
+                <div key={campus.value} className="flex items-center space-x-2">
+                  <RadioGroupItem value={campus.value} id={`campus-${campus.value}`} />
+                  <Label htmlFor={`campus-${campus.value}`} className="cursor-pointer">
+                    {campus.label}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+
+          {/* Chọn tòa nhà */}
+          {selectedCampus && (
+            <div className="space-y-4">
+              <Label className="text-lg font-medium">Chọn tòa nhà</Label>
+              <Select
+                value={selectedBuilding || ""}
+                onValueChange={(value) => {
+                  setSelectedBuilding(value);
+                  setSelectedPrinter(null); // Reset printer selection
+                }}
               >
-                {printer.status === "available" ? "Khả dụng" : "Bảo trì"}
+                <SelectTrigger className="w-full max-w-md">
+                  <SelectValue placeholder="Chọn tòa nhà" />
+                </SelectTrigger>
+                <SelectContent>
+                  {buildings
+                    .filter((building) => building.campusId === selectedCampus)
+                    .map((building) => (
+                      <SelectItem key={building.id} value={building.id}>
+                        {building.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Chọn máy in */}
+          {selectedBuilding && (
+            <div className="space-y-4">
+              <Label className="text-lg font-medium">Chọn máy in</Label>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {printers
+                  .filter((printer) => printer.buildingId === selectedBuilding)
+                  .map((printer) => {
+                    const isSelected = selectedPrinter === printer.id;
+                    const isDisabled = printer.status === "maintenance";
+
+                    return (
+                      <Button
+                        key={printer.id}
+                        variant={isSelected ? "default" : "outline"}
+                        className={`flex-col items-start h-auto p-4 space-y-2 border-2 rounded-lg transition-colors ${
+                          isDisabled
+                            ? "opacity-50 cursor-not-allowed bg-gray-200 border-gray-300"
+                            : isSelected
+                            ? "bg-blue-100 border-blue-500 hover:bg-blue-200"
+                            : "bg-white border-gray-300 hover:bg-gray-100"
+                        }`}
+                        onClick={() => setSelectedPrinter(printer.id)}
+                        disabled={isDisabled}
+                      >
+                        <div className={`font-semibold ${isSelected ? "text-blue-600" : ""}`}>
+                          {printer.name}
+                        </div>
+                        <div
+                          className={`text-sm ${
+                            printer.status === "available" ? "text-green-500" : "text-red-500"
+                          }`}
+                        >
+                          {printer.status === "available" ? "Khả dụng" : "Bảo trì"}
+                        </div>
+                      </Button>
+                    );
+                  })}
               </div>
-            </Button>
-          );
-        })}
-    </div>
-  </div>
-)}
-    </div>
-  )
+            </div>
+          )}
+        </div>
+      );
+
 
 
     case 2:
