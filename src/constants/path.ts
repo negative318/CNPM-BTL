@@ -6,7 +6,7 @@ const mainPath = {
     help: '/help',
     modifyPrinter: '/spso/modifyPrinter',
     printerManagement: '/spso/priterManagement',
-    printingHistory: '/spso/printingHistory'
+    printingHistory: '/spso/printingHistory',
     info: '/info',
     buypage: '/buypage',
     historyBuyPage: '/historybuypage'
