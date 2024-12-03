@@ -4,7 +4,7 @@ export default function Wallet() {
   return (
     <div className="container flex items-center justify-center">
       <div className="flex flex-col items-center justify-center h-screen">
-        <div className="flex flex-col items-center p-10 bg-white shadow-lg rounded-lg w-96">
+        <div className="flex flex-col items-center p-10 bg-white rounded-lg shadow-lg w-96">
           {/* Logo */}
           <img src="/public/images/wallet.jpg" alt="Logo" className="h-16 mb-4" />
 
@@ -21,9 +21,9 @@ export default function Wallet() {
           </div>
 
           {/* Buttons */}
-          <div className="space-y-4 w-full mb-6">
+          <div className="w-full mb-6 space-y-4">
             <button className="w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
-              Recharge
+              Buy Page
             </button>
             <button className="w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
               History
@@ -31,10 +31,10 @@ export default function Wallet() {
           </div>
 
           {/* Priority Text */}
-          <div className="text-center text-gray-500 mb-4 text-sm">
+          <div className="mb-4 text-sm text-center text-gray-500">
             Priority when paying online
           </div>
-          <div className="text-center text-gray-500 mb-4 text-sm">
+          <div className="mb-4 text-sm text-center text-gray-500">
             We will use the paper type you choose when calculating your printing costs.
           </div>
 
