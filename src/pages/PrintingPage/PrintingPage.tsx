@@ -16,22 +16,13 @@ import {
 } from "../../components/ui/dialog"
 import { AppContext } from '../../contexts/app.context';
 
-interface Campus {
-  id: string
-  name: string
-}
-
-interface Building {
-  id: string
-  name: string
-  campusId: string
-}
-
-interface Printer {
-  id: string
-  name: string
-  buildingId: string
-  status: "available" | "maintenance"
+interface PrinterData {
+  id: number;
+  buildingName: string;
+  campusName: string;
+  description: string;
+  printerStatus: string;
+  roomNumber: string;
 }
 
 interface PrintSettings {
@@ -51,12 +42,9 @@ export default function PrintingPage() {
   ]);
   const [selectedCampus, setSelectedCampus] = useState("");
 
-  const [buildings, setBuildings] = useState([]);
+  const [printData, setPrintData] = useState<PrinterData[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState("");
 
-  const [printers, setPrinters] = useState([]);
-
-  
   const [selectedPrinter, setSelectedPrinter] = useState<string | null>(null)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
@@ -69,8 +57,6 @@ export default function PrintingPage() {
     pages: "all",
   })
 
-
-
   const [pdfFile, setPdfFile] = useState<string | null>(null);
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -78,7 +64,7 @@ export default function PrintingPage() {
       const file = files[0];
       if (file.type === "application/pdf") {
         setUploadedFiles([...uploadedFiles, ...files]);
-        setPdfFile(URL.createObjectURL(file)); // Tạo URL blob để hiển thị PDF
+        setPdfFile(URL.createObjectURL(file));
       } else {
         alert("Vui lòng chọn tệp PDF");
       }
@@ -112,128 +98,129 @@ export default function PrintingPage() {
 
   useEffect(() => {
     if (selectedCampus) {
-      console.log(profile?.jwtToken)
+      console.log("Stored jwtToken:", localStorage.getItem("jwtToken"));
       axios
         .get(`http://localhost:8080/api/v1/printers/status?location=${selectedCampus}&pageNumber=0&pageSize=10`, {
           headers: {
-            Authorization: `Bearer Token ${profile?.jwtToken}`,
+            Authorization: `Bearer ${profile?.jwtToken}`,
           },
         })
         .then((response) => {
           const data = response.data.content;
-          console.log(data)
-          setBuildings(data.buildings || []);
-          setPrinters(data.printers || []);
+          console.log(data);
+          setPrintData(data);
         })
         .catch((error) => {
           console.error("Lỗi khi tải dữ liệu:", error);
         });
     } else {
-      // Reset khi không có campus được chọn
-      setBuildings([]);
-      setPrinters([]);
+      setPrintData([]);
     }
-  }, [selectedCampus]); // Chỉ chạy khi selectedCampus thay đổi
+  }, [selectedCampus]);
 
 
   const renderStepContent = () => {
     switch (step) {
       case 1:
-      return (
-        <div className="space-y-8">
-          {/* Chọn cơ sở */}
-          <div className="space-y-4">
-            <Label className="text-lg font-medium">Chọn cơ sở</Label>
-            <RadioGroup
-              value={selectedCampus || ""}
-              onValueChange={(value) => {
-                setSelectedCampus(value); // Cập nhật campus
-                setSelectedBuilding(null); // Reset building selection
-                setSelectedPrinter(null); // Reset printer selection
-              }}
-              className="flex flex-wrap gap-4"
-            >
-              {campuses.map((campus) => (
-                <div key={campus.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={campus.value} id={`campus-${campus.value}`} />
-                  <Label htmlFor={`campus-${campus.value}`} className="cursor-pointer">
-                    {campus.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-
-          {/* Chọn tòa nhà */}
-          {selectedCampus && (
+        const uniqueBuildings = Array.from(
+          new Set(printData.map((printer) => printer.buildingName))
+        );
+  
+        return (
+          <div className="space-y-8">
+            {/* Chọn cơ sở */}
             <div className="space-y-4">
-              <Label className="text-lg font-medium">Chọn tòa nhà</Label>
-              <Select
-                value={selectedBuilding || ""}
+              <Label className="text-lg font-medium">Chọn cơ sở</Label>
+              <RadioGroup
+                value={selectedCampus || ""}
                 onValueChange={(value) => {
-                  setSelectedBuilding(value);
-                  setSelectedPrinter(null); // Reset printer selection
+                  setSelectedCampus(value); // Cập nhật campus
                 }}
+                className="flex flex-wrap gap-4"
               >
-                <SelectTrigger className="w-full max-w-md">
-                  <SelectValue placeholder="Chọn tòa nhà" />
-                </SelectTrigger>
-                <SelectContent>
-                  {buildings
-                    .filter((building) => building.campusId === selectedCampus)
-                    .map((building) => (
-                      <SelectItem key={building.id} value={building.id}>
-                        {building.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+                {campuses.map((campus) => (
+                  <div key={campus.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={campus.value} id={`campus-${campus.value}`} />
+                    <Label htmlFor={`campus-${campus.value}`} className="cursor-pointer">
+                      {campus.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
             </div>
-          )}
-
-          {/* Chọn máy in */}
-          {selectedBuilding && (
-            <div className="space-y-4">
-              <Label className="text-lg font-medium">Chọn máy in</Label>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {printers
-                  .filter((printer) => printer.buildingId === selectedBuilding)
-                  .map((printer) => {
-                    const isSelected = selectedPrinter === printer.id;
-                    const isDisabled = printer.status === "maintenance";
-
-                    return (
-                      <Button
-                        key={printer.id}
-                        variant={isSelected ? "default" : "outline"}
-                        className={`flex-col items-start h-auto p-4 space-y-2 border-2 rounded-lg transition-colors ${
-                          isDisabled
-                            ? "opacity-50 cursor-not-allowed bg-gray-200 border-gray-300"
-                            : isSelected
-                            ? "bg-blue-100 border-blue-500 hover:bg-blue-200"
-                            : "bg-white border-gray-300 hover:bg-gray-100"
-                        }`}
-                        onClick={() => setSelectedPrinter(printer.id)}
-                        disabled={isDisabled}
-                      >
-                        <div className={`font-semibold ${isSelected ? "text-blue-600" : ""}`}>
-                          {printer.name}
-                        </div>
-                        <div
-                          className={`text-sm ${
-                            printer.status === "available" ? "text-green-500" : "text-red-500"
-                          }`}
+  
+            {/* Chọn tòa nhà */}
+            {selectedCampus && (
+              <div className="space-y-4">
+                <Label className="text-lg font-medium">Chọn tòa nhà</Label>
+                <Select
+                  value={selectedBuilding || ""}
+                  onValueChange={(value) => {
+                    setSelectedBuilding(value);
+                    setSelectedPrinter(null); // Reset printer selection
+                  }}
+                >
+                  <SelectTrigger className="w-full max-w-md">
+                    <SelectValue placeholder="Chọn tòa nhà" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-100 border border-gray-300 rounded-lg shadow-lg">
+                      {uniqueBuildings.map((building, index) => (
+                        <SelectItem
+                          key={index}
+                          value={building}
+                          className="px-4 py-2 transition-colors cursor-pointer hover:bg-blue-100 hover:text-blue-600"
                         >
-                          {printer.status === "available" ? "Khả dụng" : "Bảo trì"}
-                        </div>
-                      </Button>
-                    );
-                  })}
+                          {building} {/* Hiển thị tên tòa nhà */}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-          )}
-        </div>
-      );
+            )}
+  
+            {/* Chọn máy in */}
+            {selectedBuilding && (
+              <div className="space-y-4">
+                <Label className="text-lg font-medium">Chọn máy in</Label>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {printData
+                    .filter((printer) => printer.buildingName === selectedBuilding)
+                    .map((printer) => {
+                      const isSelected = selectedPrinter === printer.id.toString();
+                      const isDisabled = printer.printerStatus === "maintenance";
+  
+                      return (
+                        <Button
+                          key={printer.id}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`flex-col items-start h-auto p-4 space-y-2 border-2 rounded-lg transition-colors ${
+                            isDisabled
+                              ? "opacity-50 cursor-not-allowed bg-gray-200 border-gray-300"
+                              : isSelected
+                              ? "bg-blue-100 border-blue-500 hover:bg-blue-200"
+                              : "bg-white border-gray-300 hover:bg-gray-100"
+                          }`}
+                          onClick={() => setSelectedPrinter(printer.id.toString())}
+                          disabled={isDisabled}
+                        >
+                          <div className={`font-semibold ${isSelected ? "text-blue-600" : ""}`}>
+                            {printer.description}
+                          </div>
+                          <div
+                            className={`text-sm ${
+                              printer.printerStatus === "ON" ? "text-green-500" : "text-red-500"
+                            }`}
+                          >
+                            {printer.printerStatus === "ON" ? "Khả dụng" : "Bảo trì"}
+                          </div>
+                        </Button>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+          </div>
+        );
 
 
 
@@ -274,109 +261,115 @@ export default function PrintingPage() {
       )
   
 
-    case 3:
-      return (
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <Label htmlFor="copies">Số bản in</Label>
-            <Input
-              id="copies"
-              type="number"
-              min="1"
-              value={printSettings.copies}
-              onChange={(e) =>
-                setPrintSettings({ ...printSettings, copies: parseInt(e.target.value) })
-              }
-            />
-          </div>
-
-          <div className="space-y-4">
-            <Label htmlFor="paper-size">Cỡ giấy</Label>
-            <Select
-              value={printSettings.paperSize}
-              onValueChange={(value) => setPrintSettings({ ...printSettings, paperSize: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn cỡ giấy" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="A4">A4</SelectItem>
-                <SelectItem value="A3">A3</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-4">
-            <Label>Số mặt giấy</Label>
-            <RadioGroup
-              value={printSettings.sides}
-              onValueChange={(value: "1" | "2") =>
-                setPrintSettings({ ...printSettings, sides: value })
-              }
-              className="flex space-x-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="1" id="sides-1" />
-                <Label htmlFor="sides-1">1 mặt</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="2" id="sides-2" />
-                <Label htmlFor="sides-2">2 mặt</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <div className="space-y-4">
-            <Label htmlFor="pages">Trang cần in</Label>
-            <Input
-              id="pages"
-              value={printSettings.pages}
-              onChange={(e) =>
-                setPrintSettings({ ...printSettings, pages: e.target.value })
-              }
-              placeholder="Ví dụ: 1-5, 8, 11-13"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <Label htmlFor="scaling">Độ thu phóng (%)</Label>
-            <Input
-              id="scaling"
-              type="number"
-              min="1"
-              max="200"
-              value={printSettings.scaling}
-              onChange={(e) =>
-                setPrintSettings({ ...printSettings, scaling: parseInt(e.target.value) })
-              }
-            />
-          </div>
-        </div>
-      )
-
-
-    case 4:
-      return (
-      <div className="space-y-6">
-        <div className="space-y-4">
-          {pdfFile ? (
-            <div className="flex items-center justify-center">
-              <iframe
-                src={pdfFile}
-                title="PDF Preview"
-                style={{ width: "100%", height: "600px" }}
-                className="border rounded-md shadow-lg"
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <Label htmlFor="copies">Số bản in</Label>
+              <Input
+                id="copies"
+                type="number"
+                min="1"
+                value={printSettings.copies}
+                onChange={(e) =>
+                  setPrintSettings({ ...printSettings, copies: parseInt(e.target.value) || 1 })
+                }
+                placeholder="Nhập số bản in"
               />
             </div>
-          ) : (
-            <div className="text-center text-muted-foreground">
-              Vui lòng chọn tệp PDF để xem preview.
+      
+            <div className="space-y-4">
+              <Label htmlFor="paper-size">Cỡ giấy</Label>
+              <Select
+                value={printSettings.paperSize}
+                onValueChange={(value) =>
+                  setPrintSettings({ ...printSettings, paperSize: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn cỡ giấy" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A4">A4</SelectItem>
+                  <SelectItem value="A3">A3</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
-        </div>
-      </div>
-    );
+      
+            <div className="space-y-4">
+              <Label>Số mặt giấy</Label>
+              <RadioGroup
+                value={printSettings.sides}
+                onValueChange={(value: "1" | "2") =>
+                  setPrintSettings({ ...printSettings, sides: value })
+                }
+                className="flex space-x-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="1" id="sides-1" />
+                  <Label htmlFor="sides-1">1 mặt</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="2" id="sides-2" />
+                  <Label htmlFor="sides-2">2 mặt</Label>
+                </div>
+              </RadioGroup>
+            </div>
+      
+            <div className="space-y-4">
+              <Label htmlFor="pages">Trang cần in</Label>
+              <Input
+                id="pages"
+                value={printSettings.pages}
+                onChange={(e) =>
+                  setPrintSettings({ ...printSettings, pages: e.target.value })
+                }
+                placeholder="Ví dụ: 1-5, 8, 11-13"
+              />
+            </div>
+          </div>
+        );
 
+
+        case 4:
+          return (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                {pdfFile ? (
+                  <div className="flex items-center justify-center">
+                    <iframe
+                      src={pdfFile}
+                      title="PDF Preview"
+                      style={{ width: "100%", height: "600px" }}
+                      className="border rounded-md shadow-lg"
+                    />
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    Vui lòng chọn tệp PDF để xem trước.
+                  </div>
+                )}
+              </div>
+        
+              <div className="p-4 space-y-4 bg-gray-100 border rounded-lg">
+                <div className="text-lg font-semibold">Thông tin in ấn:</div>
+                <div className="text-sm">
+                  <p>
+                    <strong>Số bản in:</strong> {printSettings.copies}
+                  </p>
+                  <p>
+                    <strong>Cỡ giấy:</strong> {printSettings.paperSize}
+                  </p>
+                  <p>
+                    <strong>Số mặt giấy:</strong> {printSettings.sides === "1" ? "1 mặt" : "2 mặt"}
+                  </p>
+                  <p>
+                    <strong>Trang cần in:</strong> {printSettings.pages || "Toàn bộ"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
 
       default:
         return null
@@ -441,14 +434,19 @@ export default function PrintingPage() {
           </div>
           {renderStepContent()}
           <div className="flex justify-end mt-6">
-            {step < 4  ? (
-              <Button onClick={goToNextStep} disabled={isNextDisabled()}>
-                Tiếp tục
-              </Button>
-            ) : (
-              <Button onClick={handlePrintSubmit}>Hoàn thành</Button>
-            )}
-          </div>
+          {step < 4 ? (
+            <Button onClick={goToNextStep} disabled={isNextDisabled()}>
+              Tiếp tục
+            </Button>
+          ) : (
+            <Button
+              onClick={handlePrintSubmit}
+              className="text-white bg-blue-600 hover:bg-blue-700"
+            >
+              Xác nhận in
+            </Button>
+          )}
+        </div>
         </CardContent>
       </Card>
 

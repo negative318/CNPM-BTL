@@ -28,10 +28,9 @@ export default function LoginPage() {
         name: `${response.data.firstName} ${response.data.lastName}`,
         email: response.data.email,
         role: response.data.roles[0]?.id || 3,
-        jwtToken: response.data.jwtToken,
+        jwtToken: response.data.jwttoken,
       };
   
-      
       localStorage.setItem("userProfile", JSON.stringify(userData));
       localStorage.setItem("jwtToken", userData.jwtToken);
   

@@ -19,7 +19,6 @@ function RejectedRoute() {
     return <LoadingPage />;
   }
 
-  console.log(isAuthenticated)
   return isAuthenticated ? (
     <Suspense fallback={<LoadingPage />}>
       <Outlet />
