@@ -113,7 +113,7 @@ export default function MainHeader() {
                   <ul>
                     <li>
                       <NavLink
-                        to={mainPath.profile}
+                        to={mainPath.info}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />

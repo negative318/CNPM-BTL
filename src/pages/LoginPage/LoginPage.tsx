@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import mainPath from "../../constants/path";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretLeft } from "@fortawesome/free-solid-svg-icons";
@@ -8,35 +8,37 @@ import { AppContext } from "../../contexts/app.context";
 import axios from "axios";
 
 export default function LoginPage() {
-  const { setIsAuthenticated, setProfile } = useContext(AppContext);
+  const { setIsAuthenticated, setProfile, setLoadingPage } = useContext(AppContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Khởi tạo navigate
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoadingPage(true);
     try {
-      // Gửi yêu cầu tới API
-      const response = await axios.post(
-        "http://localhost:8080/api/v1/auth/login",
-        {
-          email,
-          password,
-        }
-      );
-
-      setIsAuthenticated(true);
-      setProfile({
+      const response = await axios.post("http://localhost:8080/api/v1/auth/login", {
+        email,
+        password,
+      });
+  
+      const userData = {
         _id: response.data.id,
         name: `${response.data.firstName} ${response.data.lastName}`,
         email: response.data.email,
-        role: response.data.roles[0]?.id || 0,
-        jwtToken: response.data.jwtToken
-      });
-
-
+        role: response.data.roles[0]?.id || 3,
+        jwtToken: response.data.jwtToken,
+      };
+  
       
+      localStorage.setItem("userProfile", JSON.stringify(userData));
+      localStorage.setItem("jwtToken", userData.jwtToken);
+  
+      setIsAuthenticated(true);
+      setProfile(userData);
+      setLoadingPage(false);
+  
       navigate(mainPath.home);
     } catch (err) {
       setError("Tên đăng nhập hoặc mật khẩu không đúng.");

@@ -7,50 +7,84 @@ import LoadingPage from './components/LoadingPage'
 import { Suspense, useContext } from 'react'
 import { AppContext } from './contexts/app.context'
 import PrintingPage from './pages/PrintingPage'
+import BuyPage from './pages/BuyPage'
+import HistoryBuyPage from './pages/HistoryBuyPage'
 
 
 
 function RejectedRoute() {
-    const { isAuthenticated } = useContext(AppContext)
-    return !isAuthenticated ? (
-      <Suspense fallback={<LoadingPage />}>
-        <Outlet />
-      </Suspense>
-    ) : (
-      <Navigate to={mainPath.home} />
-    )
+  const { isAuthenticated, loadingPage } = useContext(AppContext);
+
+  if (loadingPage) {
+    return <LoadingPage />;
   }
 
-
-
-export default function useRouteElements(){
-    const routeElements = useRoutes([
-        {
-            index: true,
-            path: mainPath.home,
-            element: (
-                <MainLayout>
-                    <HomePage />
-                </MainLayout>
-            )
-        },
-        {
-            path: '',
-            element: <RejectedRoute />,
-            children: [{ path: mainPath.login, element: <LoginPage /> }]
-        },
-        {
-          index: true,
-          path: mainPath.printing,
-          element: (
-            <MainLayout>
-              <PrintingPage />
-            </MainLayout>
-          )
-        },
-    
-        
-    ])
-
-    return routeElements
+  console.log(isAuthenticated)
+  return isAuthenticated ? (
+    <Suspense fallback={<LoadingPage />}>
+      <Outlet />
+    </Suspense>
+  ) : (
+    <Navigate to={mainPath.home} />
+  );
 }
+
+
+
+  export default function useRouteElements() {
+    const routeElements = useRoutes([
+      {
+        index: true,
+        path: mainPath.home,
+        element: (
+          <MainLayout>
+            <HomePage />
+          </MainLayout>
+        )
+      },
+      {
+        path: mainPath.login,
+        element: <LoginPage />,
+      },
+      {
+        path: '',
+        element: <RejectedRoute />,
+        children: [
+          {
+            path: mainPath.buypage,
+            element: (
+              <MainLayout>
+                <BuyPage />
+              </MainLayout>
+            ),
+          },
+          {
+            path: mainPath.historyBuyPage,
+            element: (
+              <MainLayout>
+                <HistoryBuyPage />
+              </MainLayout>
+            ),
+          },
+          {
+            path: mainPath.printing,
+            element: (
+              <MainLayout>
+                <PrintingPage />
+              </MainLayout>
+            ),
+          },
+          {
+            path: mainPath.info,
+            element: (
+              <MainLayout>
+                <BuyPage />
+              </MainLayout>
+            ),
+          },
+        ],
+      },
+    ]);
+  
+    return routeElements
+  }
