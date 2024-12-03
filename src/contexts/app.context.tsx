@@ -43,17 +43,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.removeItem("jwtToken");
     };
 
-
     useEffect(() => {
-      const storedProfile = localStorage.getItem("userProfile");
-      if (storedProfile) {
-        const parsedProfile = JSON.parse(storedProfile);
-        setProfile(parsedProfile);
+      const storedToken = localStorage.getItem('jwtToken');
+      const storedProfile = localStorage.getItem('userProfile');
+    
+      if (storedToken && storedProfile) {
         setIsAuthenticated(true);
+        setProfile(JSON.parse(storedProfile));
+      } else {
+        setIsAuthenticated(false);
       }
       setLoadingPage(false);
     }, []);
-
 
   
     return (

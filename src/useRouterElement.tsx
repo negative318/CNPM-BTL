@@ -12,17 +12,20 @@ import HistoryBuyPage from './pages/HistoryBuyPage'
 
 
 function RejectedRoute() {
-    const { isAuthenticated } = useContext(AppContext)
-    console.log(isAuthenticated);
+  const { isAuthenticated, loadingPage } = useContext(AppContext);
 
-    return isAuthenticated ? (
-      <Suspense fallback={<LoadingPage />}>
-        <Outlet />
-      </Suspense>
-    ) : (
-      <Navigate to={mainPath.home} />
-    )
+  if (loadingPage) {
+    return <LoadingPage />; // Hiển thị trang loading trong khi đang tải
   }
+
+  return isAuthenticated ? (
+    <Suspense fallback={<LoadingPage />}>
+      <Outlet />
+    </Suspense>
+  ) : (
+    <Navigate to={mainPath.login} /> // Điều hướng đến trang đăng nhập nếu chưa xác thực
+  );
+}
 
 
 
@@ -38,9 +41,8 @@ function RejectedRoute() {
         )
       },
       {
-        path: '',
-        element: <RejectedRoute />,
-        children: [{path: mainPath.login, element: <LoginPage />}]
+        path: mainPath.login,
+        element: <LoginPage />,
       },
       {
         path: '',
@@ -52,39 +54,27 @@ function RejectedRoute() {
               <MainLayout>
                 <BuyPage />
               </MainLayout>
-            )
-          }
-        ]
-      },
-      {
-        path: '',
-        element: <RejectedRoute />,
-        children: [
-          {
-            path: mainPath.info,
-            element: (
-              <MainLayout>
-                <BuyPage />
-              </MainLayout>
-            )
-          }
-        ]
-      },
-      {
-        path: '',
-        element: <RejectedRoute />,
-        children: [
+            ),
+          },
           {
             path: mainPath.historyBuyPage,
             element: (
               <MainLayout>
                 <HistoryBuyPage />
               </MainLayout>
-            )
-          }
-        ]
-      }
-    ])
+            ),
+          },
+          {
+            path: mainPath.info,
+            element: (
+              <MainLayout>
+                <BuyPage />
+              </MainLayout>
+            ),
+          },
+        ],
+      },
+    ]);
   
     return routeElements
   }
