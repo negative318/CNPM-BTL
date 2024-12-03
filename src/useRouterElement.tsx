@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage'
 import LoadingPage from './components/LoadingPage'
 import { Suspense, useContext } from 'react'
 import { AppContext } from './contexts/app.context'
+import PrintingPage from './pages/PrintingPage'
 import BuyPage from './pages/BuyPage'
 import HistoryBuyPage from './pages/HistoryBuyPage'
 
@@ -62,6 +63,14 @@ function RejectedRoute() {
             element: (
               <MainLayout>
                 <HistoryBuyPage />
+              </MainLayout>
+            ),
+          },
+          {
+            path: mainPath.printing,
+            element: (
+              <MainLayout>
+                <PrintingPage />
               </MainLayout>
             ),
           },
