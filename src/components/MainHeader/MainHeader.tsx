@@ -11,7 +11,7 @@ export default function MainHeader() {
   
     const menus = [
       {
-        name: 'TRANG CHỦ',
+        name: 'Hồ sơ',
         path: mainPath.home
       }
     ]
@@ -24,7 +24,7 @@ export default function MainHeader() {
   
     return (
       <div
-        className='items-center justify-center w-full h-full bg-webColor500 text-lightText'
+        className='items-center justify-center w-full h-full bg-gray-500 text-lightText'
         style={{ minHeight: 'inherit' }}
       >
         <div className='container flex justify-between w-full h-full'>
@@ -41,7 +41,8 @@ export default function MainHeader() {
                   to={menu.path}
                   className={({ isActive }) =>
                     classNames(titleClassname, {
-                      'bg-hoveringBg': isActive
+                      'bg-gray-500 text-white': isActive, 
+                      'hover:bg-hoveringBg': !isActive 
                     })
                   }
                 >
@@ -51,55 +52,42 @@ export default function MainHeader() {
   
               {isAuthenticated && (
                 <NavLink
-                  to={mainPath.printing}
+                  to={mainPath.modifyPrinter}
                   className={({ isActive }) =>
                     classNames(titleClassname, {
                       'bg-hoveringBg': isActive
                     })
                   }
                 >
-                  PRINTING
+                  Thêm, xóa, sửa máy
                 </NavLink>
               )}
   
               {isAuthenticated && !isAdmin && (
                 <NavLink
-                  to={mainPath.wallet}
+                  to={mainPath.printerManagement}
                   className={({ isActive }) =>
                     classNames(titleClassname, {
                       'bg-hoveringBg': isActive
                     })
                   }
                 >
-                  WALLET
+                  Cấu hình in
                 </NavLink>
               )}
   
               {isAuthenticated && !isAdmin && (
                 <NavLink
-                  to={mainPath.help}
+                  to={mainPath.printingHistory}
                   className={({ isActive }) =>
                     classNames(titleClassname, {
                       'bg-hoveringBg': isActive
                     })
                   }
                 >
-                  NEED HELP?
+                  Lịch sử in ấn
                 </NavLink>
               )}
-  
-              {/* {isAdmin && (
-                <NavLink
-                  to={adminPath.mainPage}
-                  className={({ isActive }) =>
-                    classNames(titleClassname, {
-                      'bg-hoveringBg': isActive
-                    })
-                  }
-                >
-                  Quản lí
-                </NavLink>
-              )} */}
             </div>
           </div>
   
