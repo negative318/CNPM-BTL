@@ -15,15 +15,16 @@ function RejectedRoute() {
   const { isAuthenticated, loadingPage } = useContext(AppContext);
 
   if (loadingPage) {
-    return <LoadingPage />; // Hiển thị trang loading trong khi đang tải
+    return <LoadingPage />;
   }
 
+  console.log(isAuthenticated)
   return isAuthenticated ? (
     <Suspense fallback={<LoadingPage />}>
       <Outlet />
     </Suspense>
   ) : (
-    <Navigate to={mainPath.login} /> // Điều hướng đến trang đăng nhập nếu chưa xác thực
+    <Navigate to={mainPath.home} />
   );
 }
 

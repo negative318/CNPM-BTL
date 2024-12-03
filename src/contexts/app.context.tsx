@@ -1,3 +1,4 @@
+import { run } from "node:test"
 import { User } from "../types/user.type"
 import { createContext, useEffect, useState } from "react"
 // interface PrintConfig{
@@ -17,7 +18,7 @@ interface AppContextInterface {
 }
 
 const initialAppContext: AppContextInterface = {
-    isAuthenticated: Boolean(false),
+    isAuthenticated: Boolean(true),
     setIsAuthenticated: () => null,
     loadingPage: false,
     setLoadingPage: () => null,
@@ -31,7 +32,7 @@ const initialAppContext: AppContextInterface = {
 export const AppContext = createContext<AppContextInterface>(initialAppContext)
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true)
     const [loadingPage, setLoadingPage] = useState<boolean>(false)
     const [profile, setProfile] = useState<User | null>(null)
     // const [printConfig, setPrintConfig] = useState<PrintConfig | null>(null)
@@ -44,19 +45,23 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     useEffect(() => {
-      const storedToken = localStorage.getItem('jwtToken');
-      const storedProfile = localStorage.getItem('userProfile');
+      const checkAuthentication = async () => {
+        const storedProfile = localStorage.getItem('userProfile');
+        const storedToken = localStorage.getItem('jwtToken');
     
-      if (storedToken && storedProfile) {
-        setIsAuthenticated(true);
-        setProfile(JSON.parse(storedProfile));
-      } else {
-        setIsAuthenticated(false);
-      }
-      setLoadingPage(false);
+        if (storedProfile && storedToken) {
+          await setProfile(JSON.parse(storedProfile));
+          await setIsAuthenticated(true)
+        } 
+        else {
+          setIsAuthenticated(false);
+        }
+        setLoadingPage(false);
+      };
+    
+      checkAuthentication();
     }, []);
 
-  
     return (
       <AppContext.Provider
         value={{

@@ -27,7 +27,7 @@ export default function LoginPage() {
         _id: response.data.id,
         name: `${response.data.firstName} ${response.data.lastName}`,
         email: response.data.email,
-        role: response.data.roles[0]?.id || 0,
+        role: response.data.roles[0]?.id || 3,
         jwtToken: response.data.jwtToken,
       };
   
