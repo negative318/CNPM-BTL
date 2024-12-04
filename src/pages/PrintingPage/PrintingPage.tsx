@@ -157,7 +157,7 @@ export default function PrintingPage() {
                   value={selectedBuilding || ""}
                   onValueChange={(value) => {
                     setSelectedBuilding(value);
-                    setSelectedPrinter(null); // Reset printer selection
+                    setSelectedPrinter(null);
                   }}
                 >
                   <SelectTrigger className="w-full max-w-md">
@@ -183,14 +183,14 @@ export default function PrintingPage() {
               <div className="space-y-4">
                 <Label className="text-lg font-medium">Chọn máy in</Label>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {printData
-                    .filter((printer) => printer.buildingName === selectedBuilding)
-                    .map((printer) => {
-                      const isSelected = selectedPrinter === printer.id.toString();
-                      const isDisabled = printer.printerStatus === "maintenance";
-  
-                      return (
-                        <Button
+                {printData
+                  .filter((printer) => printer.buildingName === selectedBuilding)
+                  .map((printer) => {
+                    const isSelected = selectedPrinter === printer.id.toString();
+                    const isDisabled = printer.printerStatus === "BROKEN";
+                    
+                    return (
+                      <Button
                           key={printer.id}
                           variant={isSelected ? "default" : "outline"}
                           className={`flex-col items-start h-auto p-4 space-y-2 border-2 rounded-lg transition-colors ${
@@ -200,8 +200,8 @@ export default function PrintingPage() {
                               ? "bg-blue-100 border-blue-500 hover:bg-blue-200"
                               : "bg-white border-gray-300 hover:bg-gray-100"
                           }`}
-                          onClick={() => setSelectedPrinter(printer.id.toString())}
-                          disabled={isDisabled}
+                          onClick={() => !isDisabled && setSelectedPrinter(printer.id.toString())}
+                          disabled={isDisabled} // Thêm thuộc tính này
                         >
                           <div className={`font-semibold ${isSelected ? "text-blue-600" : ""}`}>
                             {printer.description}
@@ -214,8 +214,9 @@ export default function PrintingPage() {
                             {printer.printerStatus === "ON" ? "Khả dụng" : "Bảo trì"}
                           </div>
                         </Button>
-                      );
-                    })}
+                    );
+                  })}
+
                 </div>
               </div>
             )}
@@ -408,9 +409,17 @@ export default function PrintingPage() {
                   key={stepNumber}
                   variant={step === stepNumber ? "default" : "outline"}
                   size="sm"
+                  className={`relative ${
+                    step === stepNumber
+                      ? "bg-blue-500 text-white border-blue-600"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
                   onClick={() => setStepAndValidate(stepNumber)}
                 >
                   Bước {stepNumber}
+                  {step === stepNumber && (
+                    <span className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
+                  )}
                 </Button>
               ))}
             </div>
