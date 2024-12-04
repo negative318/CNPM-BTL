@@ -1,6 +1,8 @@
 import { Link, NavLink } from "react-router-dom";
 import mainPath from "../../constants/path";
 
+
+
 export default function Wallet() {
   return (
     <div className="container flex items-center justify-center">
@@ -23,19 +25,14 @@ export default function Wallet() {
 
           {/* Buttons */}
           <div className="w-full mb-6 space-y-4">
-            
-            <button className="w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
-              <Link to={mainPath.buypage}>
+  
+              <Link to={mainPath.buypage} className="flex items-center justify-center flex-grow w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
                 Buy Page
               </Link>
-            </button>
             
-            
-            <button className="w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
-              <Link to={mainPath.historyBuyPage}>
+              <Link to={mainPath.historyBuyPage} className="flex items-center justify-center flex-grow w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
                 History
               </Link>
-            </button>
           </div>
 
           {/* Priority Text */}
