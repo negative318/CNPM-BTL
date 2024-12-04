@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Radio, Input, Table, Card, Select } from 'antd';
+import React, { useState, useEffect, useContext } from 'react';
+import { Radio, Input, Table, Card, Select, message } from 'antd';
+import { AppContext } from '../../../contexts/app.context';
 
 const { Group: RadioGroup } = Radio;
 const { Option } = Select;
@@ -17,16 +18,55 @@ const PrintingHistory: React.FC = () => {
   const [searchType, setSearchType] = useState('student');
   const [mssv, setMssv] = useState('');
   const [selectedPrinter, setSelectedPrinter] = useState<string | null>(null);
+  const [data, setData] = useState<PrintHistory[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Giả định isAuthenticated và profile đến từ context hoặc props
+  const { isAuthenticated, profile } = useContext(AppContext); // Thay bằng giá trị thực tế từ hệ thống xác thực
 
-  // Dữ liệu lịch sử in
-  const data: PrintHistory[] = [
-    { key: '1', date: '2024-07-22', printerId: '001', document: 'File_A.docx', quantity: 10, mssv: '20210001' },
-    { key: '2', date: '2024-07-23', printerId: '001', document: 'Paper_B.pdf', quantity: 15, mssv: '20210002' },
-    { key: '3', date: '2024-07-24', printerId: '002', document: 'Thesis_C.docx', quantity: 20, mssv: '20210001' },
-    { key: '4', date: '2024-07-25', printerId: '002', document: 'Project_D.pdf', quantity: 5, mssv: '20210003' },
-    { key: '5', date: '2024-07-26', printerId: '003', document: 'Notes_E.docx', quantity: 12, mssv: '20210001' },
-    { key: '6', date: '2024-07-27', printerId: '003', document: 'Report_F.pdf', quantity: 8, mssv: '20210002' },
-  ];
+  useEffect(() => {
+    if (!isAuthenticated || !profile) {
+      message.error('Vui lòng đăng nhập để xem lịch sử in ấn.');
+      return;
+    }
+
+    const fetchPrintHistory = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('http://localhost:8080/api/v1/printing/printers/3/logs', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${profile.jwtToken}`, // Sửa lại chỗ này
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Không thể tải dữ liệu, vui lòng thử lại sau.');
+        }
+
+        const result = await response.json();
+
+        // Định dạng lại dữ liệu cho bảng
+        const formattedData = result.content.map((item: any) => ({
+          key: item.id.toString(),
+          date: new Date(item.logDate).toLocaleString(),
+          printerId: item.document.id.toString(),
+          document: item.document.name,
+          quantity: item.document.pageNumber,
+          mssv: 'unknown', // Thêm logic để lấy MSSV nếu cần
+        }));
+
+        setData(formattedData);
+      } catch (error: any) {
+        message.error(error.message || 'Đã xảy ra lỗi!');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPrintHistory();
+  }, [isAuthenticated, profile]);
 
   // Lọc dữ liệu dựa trên tìm kiếm
   const filteredData =
@@ -91,9 +131,16 @@ const PrintingHistory: React.FC = () => {
               background: '#e9ecef',
             }}
           >
-            <Option value="001">Máy in 001</Option>
-            <Option value="002">Máy in 002</Option>
-            <Option value="003">Máy in 003</Option>
+            <Option value="1">Máy in 001</Option>
+            <Option value="2">Máy in 002</Option>
+            <Option value="3">Máy in 003</Option>
+            <Option value="4">Máy in 004</Option>
+            <Option value="5">Máy in 005</Option>
+            <Option value="6">Máy in 006</Option>
+            <Option value="7">Máy in 007</Option>
+            <Option value="8">Máy in 008</Option>
+            <Option value="9">Máy in 009</Option>
+            <Option value="10">Máy in 010</Option>
           </Select>
         </Card>
       )}
@@ -103,6 +150,7 @@ const PrintingHistory: React.FC = () => {
         <Table
           columns={columns}
           dataSource={filteredData}
+          loading={isLoading}
           pagination={{ pageSize: 5 }}
           style={{ borderRadius: '10px', overflow: 'hidden' }}
           locale={{ emptyText: 'Không có dữ liệu' }}

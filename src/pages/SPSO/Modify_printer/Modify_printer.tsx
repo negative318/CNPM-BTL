@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { Button, Input, Modal, Select, Space, Form, Typography, Card, Row, Col } from "antd";
+import React, { useState, useEffect, useContext } from "react";
+import { Button, Input, Modal, Select, Space, Typography, Card, Row, Col, Form } from "antd";
+import { AppContext } from "../../../contexts/app.context";
 
 const { Title } = Typography;
 
 interface Printer {
-  id: string;
+  id: number;
   status: string;
   campus: string;
   building: string;
@@ -12,92 +13,106 @@ interface Printer {
 }
 
 const ModifyPrinter: React.FC = () => {
-  const initialPrinterData: Printer[] = [
-    { id: "Máy 1", status: "Khả dụng", campus: "Cơ sở Lý Thường Kiệt", building: "H4", location: "Tầng 1" },
-    { id: "Máy 2", status: "Bảo trì", campus: "Cơ sở Lý Thường Kiệt", building: "H5", location: "Tầng 2" },
-    { id: "Máy 3", status: "Khả dụng", campus: "Cơ sở Dĩ An Bình Dương", building: "H4", location: "Tầng 3" },
-    { id: "Máy 4", status: "Khả dụng", campus: "Cơ sở Dĩ An Bình Dương", building: "H5", location: "Tầng 4" },
-  ];
-
-  const [printerData, setPrinterData] = useState<Printer[]>(initialPrinterData);
+  const { isAuthenticated, profile } = useContext(AppContext); // Lấy thông tin từ context
+  const [printerData, setPrinterData] = useState<Printer[]>([]);
+  const [filteredPrinters, setFilteredPrinters] = useState<Printer[]>([]);
   const [selectedCampus, setSelectedCampus] = useState<string | undefined>();
   const [selectedBuilding, setSelectedBuilding] = useState<string | undefined>();
-  const [filteredPrinters, setFilteredPrinters] = useState<Printer[]>(initialPrinterData);
   const [selectedPrinter, setSelectedPrinter] = useState<Printer | null>(null);
-  const [isAdding, setIsAdding] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
+
+  // Fetch dữ liệu máy in
+  useEffect(() => {
+    if (!isAuthenticated || !profile) return;
+
+    const fetchPrinters = async () => {
+      try {
+        const token = profile?.jwtToken || "";
+        const response = await fetch(
+          "http://localhost:8080/api/v1/printers/status?location=LTK&pageNumber=0&pageSize=10",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const formattedPrinters: Printer[] = data.content.map((printer: any) => ({
+          id: printer.id,
+          status: printer.printerStatus === "ON" ? "Khả dụng" : "Bảo trì",
+          campus: printer.campusName,
+          building: printer.buildingName,
+          location: `Phòng ${printer.roomNumber}`,
+        }));
+
+        setPrinterData(formattedPrinters);
+        setFilteredPrinters(formattedPrinters);
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu máy in:", error);
+      }
+    };
+
+    fetchPrinters();
+  }, [isAuthenticated, profile]);
+
+  // Thêm máy in mới
+  const handleAddPrinter = async (values: any) => {
+    try {
+      const token = profile?.jwtToken || "";
+      const response = await fetch("http://localhost:8080/api/v1/printers", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newPrinter = await response.json();
+      const formattedPrinter: Printer = {
+        id: newPrinter.id,
+        status: "Khả dụng", // Máy in mặc định khả dụng khi thêm
+        campus: newPrinter.campusName,
+        building: newPrinter.buildingName,
+        location: `Phòng ${newPrinter.roomNumber}`,
+      };
+
+      // Cập nhật danh sách máy in
+      setPrinterData([...printerData, formattedPrinter]);
+      setFilteredPrinters([...filteredPrinters, formattedPrinter]);
+
+      setIsModalVisible(false);
+      form.resetFields();
+    } catch (error) {
+      console.error("Lỗi khi thêm máy in mới:", error);
+    }
+  };
+
+  const handleSearch = () => {
+    const result = printerData.filter(
+      (printer) =>
+        (!selectedCampus || printer.campus === selectedCampus) &&
+        (!selectedBuilding || printer.building === selectedBuilding)
+    );
+    setFilteredPrinters(result);
+  };
 
   const handleResetSearch = () => {
     setSelectedCampus(undefined);
     setSelectedBuilding(undefined);
-    setFilteredPrinters(printerData); // Hiển thị toàn bộ danh sách máy in
-  };
-
-  // Xử lý tìm kiếm
-  const handleSearch = () => {
-    if (selectedCampus && selectedBuilding) {
-      const result = printerData.filter(
-        (printer) =>
-          printer.campus === selectedCampus && printer.building === selectedBuilding
-      );
-      setFilteredPrinters(result);
-    } else {
-      setFilteredPrinters(printerData);
-    }
-  };
-
-  // Xử lý thêm máy in
-  const handleAddPrinter = (values: any) => {
-    const newPrinter: Printer = {
-      id: `Máy ${printerData.length + 1}`,
-      status: "Khả dụng",
-      campus: values.campus,
-      building: values.building,
-      location: values.location,
-    };
-    setPrinterData([...printerData, newPrinter]);
-    setFilteredPrinters([...filteredPrinters, newPrinter]);
-    setIsAdding(false);
-  };
-
-  // Xử lý thay đổi trạng thái máy in
-  const handleChangeStatus = (printerId: string) => {
-    setPrinterData((prevData) => {
-      const updatedData = prevData.map((printer) =>
-        printer.id === printerId
-          ? { ...printer, status: printer.status === "Khả dụng" ? "Bảo trì" : "Khả dụng" }
-          : printer
-      );
-      setFilteredPrinters(updatedData); // Cập nhật lại danh sách hiển thị
-      return updatedData;
-    });
-  };
-
-  // Xử lý xóa máy in
-  const handleDeletePrinter = () => {
-    if (selectedPrinter) {
-      Modal.confirm({
-        title: "Xác nhận xóa máy in",
-        content: `Bạn có chắc muốn xóa ${selectedPrinter.id}?`,
-        onOk: () => {
-          const updatedData = printerData.filter((printer) => printer.id !== selectedPrinter.id);
-          setPrinterData(updatedData);
-          setFilteredPrinters(updatedData);
-          setSelectedPrinter(null);
-        },
-      });
-    }
-  };
-
-  // Hàm để lấy màu nền dựa trên trạng thái máy in
-  const getBackgroundColor = (status: string) => {
-    switch (status) {
-      case "Khả dụng":
-        return "#d4edda"; // Màu xanh nhạt
-      case "Bảo trì":
-        return "#f8d7da"; // Màu đỏ nhạt
-      default:
-        return "#ffffff"; // Màu trắng
-    }
+    setFilteredPrinters(printerData);
   };
 
   return (
@@ -110,8 +125,11 @@ const ModifyPrinter: React.FC = () => {
           onChange={(value) => setSelectedCampus(value)}
           style={{ width: "100%" }}
         >
-          <Select.Option value="Cơ sở Lý Thường Kiệt">Cơ sở Lý Thường Kiệt</Select.Option>
-          <Select.Option value="Cơ sở Dĩ An Bình Dương">Cơ sở Dĩ An Bình Dương</Select.Option>
+          {Array.from(new Set(printerData.map((printer) => printer.campus))).map((campus) => (
+            <Select.Option key={campus} value={campus}>
+              {campus}
+            </Select.Option>
+          ))}
         </Select>
         <Select
           placeholder="Chọn tòa nhà"
@@ -119,15 +137,19 @@ const ModifyPrinter: React.FC = () => {
           onChange={(value) => setSelectedBuilding(value)}
           style={{ width: "100%" }}
         >
-          <Select.Option value="H4">H4</Select.Option>
-          <Select.Option value="H5">H5</Select.Option>
+          {Array.from(new Set(printerData.map((printer) => printer.building))).map((building) => (
+            <Select.Option key={building} value={building}>
+              {building}
+            </Select.Option>
+          ))}
         </Select>
         <Space>
           <Button type="primary" onClick={handleSearch}>
             Tìm kiếm
           </Button>
-          <Button onClick={() => handleResetSearch()}>
-            Hủy tìm kiếm
+          <Button onClick={handleResetSearch}>Hủy tìm kiếm</Button>
+          <Button type="dashed" onClick={() => setIsModalVisible(true)}>
+            Thêm máy in mới
           </Button>
         </Space>
       </Space>
@@ -139,74 +161,49 @@ const ModifyPrinter: React.FC = () => {
               hoverable
               onClick={() => setSelectedPrinter(printer)}
               style={{
-                backgroundColor: printer.id === selectedPrinter?.id ? "#e6f7ff" : getBackgroundColor(printer.status),
-                borderColor: printer.id === selectedPrinter?.id ? "#1890ff" : "#f0f0f0",
+                backgroundColor: printer.status === "Khả dụng" ? "#d4edda" : "#f8d7da",
               }}
             >
-              <Title level={4}>{printer.id}</Title>
+              <Title level={4}>{`Máy in ${printer.id}`}</Title>
               <p>{printer.location}</p>
-              <p
-                onClick={() => handleChangeStatus(printer.id)}
-                style={{
-                  color: printer.status === "Khả dụng" ? "green" : "red",
-                  cursor: "pointer",
-                }}
-              >
-                {printer.status}
-              </p>
+              <p style={{ color: printer.status === "Khả dụng" ? "green" : "red" }}>{printer.status}</p>
             </Card>
           </Col>
         ))}
-        <Col span={6}>
-          <Card
-            hoverable
-            onClick={() => setIsAdding(true)}
-            style={{
-              border: "1px dashed #ccc",
-              textAlign: "center",
-            }}
-          >
-            <Title level={4}>+ Thêm máy in</Title>
-          </Card>
-        </Col>
       </Row>
-
-      <Button
-        type="primary"
-        danger
-        onClick={handleDeletePrinter}
-        disabled={!selectedPrinter}
-        style={{ marginTop: "20px" }}
-      >
-        Xóa máy in
-      </Button>
 
       {/* Modal thêm máy in */}
       <Modal
         title="Thêm máy in mới"
-        visible={isAdding}
-        onCancel={() => setIsAdding(false)}
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
-        <Form onFinish={handleAddPrinter} layout="vertical">
-          <Form.Item name="campus" label="Cơ sở" rules={[{ required: true, message: "Vui lòng chọn cơ sở!" }]}>
-            <Select placeholder="Chọn cơ sở">
-              <Select.Option value="Cơ sở Lý Thường Kiệt">Cơ sở Lý Thường Kiệt</Select.Option>
-              <Select.Option value="Cơ sở Dĩ An Bình Dương">Cơ sở Dĩ An Bình Dương</Select.Option>
-            </Select>
+        <Form form={form} layout="vertical" onFinish={handleAddPrinter}>
+          <Form.Item name="model" label="Model" rules={[{ required: true, message: "Vui lòng nhập model" }]}>
+            <Input />
           </Form.Item>
-          <Form.Item name="building" label="Tòa nhà" rules={[{ required: true, message: "Vui lòng chọn tòa nhà!" }]}>
-            <Select placeholder="Chọn tòa nhà">
-              <Select.Option value="H4">H4</Select.Option>
-              <Select.Option value="H5">H5</Select.Option>
-            </Select>
+          <Form.Item name="description" label="Mô tả" rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}>
+            <Input />
           </Form.Item>
-          <Form.Item name="location" label="Vị trí" rules={[{ required: true, message: "Vui lòng nhập vị trí!" }]}>
-            <Input placeholder="Nhập vị trí (ví dụ: Tầng 1)" />
+          <Form.Item name="brand" label="Thương hiệu" rules={[{ required: true, message: "Vui lòng nhập thương hiệu" }]}>
+            <Input />
           </Form.Item>
-          <Button type="primary" htmlType="submit">
-            Thêm máy in
-          </Button>
+          <Form.Item name="buildingName" label="Tên tòa nhà" rules={[{ required: true, message: "Vui lòng nhập tên tòa nhà" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="campusName" label="Tên cơ sở" rules={[{ required: true, message: "Vui lòng nhập tên cơ sở" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="roomNumber" label="Số phòng" rules={[{ required: true, message: "Vui lòng nhập số phòng" }]}>
+            <Input />
+          </Form.Item>
+          <Space style={{ width: "100%", justifyContent: "end" }}>
+            <Button onClick={() => setIsModalVisible(false)}>Hủy</Button>
+            <Button type="primary" htmlType="submit">
+              Thêm
+            </Button>
+          </Space>
         </Form>
       </Modal>
     </div>

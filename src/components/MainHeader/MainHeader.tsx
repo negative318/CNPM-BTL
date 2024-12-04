@@ -14,14 +14,14 @@ export default function MainHeader() {
   const [paperCount, setPaperCount] = useState(50); // Mặc định là 50 tờ (dữ liệu trên local)
 
   // Xác định vai trò
-  const isAdmin = profile?.role === 3; // role 2: SPSO
-  const isStudent = profile?.role === 2; // role 3: student
+  const isSPSO = profile?.role === 2; // role 2: SPSO
+  const isStudent = profile?.role === 3; // role 3: student
 
   const titleClassname =
     "text-lightText uppercase justify-center rounded-lg col-span-1 relative flex items-center font-medium px-6 hover:bg-hoveringBg";
 
-  // Giao diện Header cho Admin
-  const adminHeader = (
+  // Giao diện Header cho SPSO
+  const SPSOHeader = (
     <>
       <NavLink
         to={mainPath.modifyPrinter}
@@ -117,8 +117,8 @@ export default function MainHeader() {
               TRANG CHỦ
             </NavLink>
 
-            {/* Giao diện riêng cho Admin */}
-            {isAdmin && adminHeader}
+            {/* Giao diện riêng cho SPSO */}
+            {isSPSO && SPSOHeader}
 
             {/* Giao diện riêng cho Student */}
             {isStudent && studentHeader}
