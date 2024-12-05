@@ -20,7 +20,7 @@ import {
 } from "../../components/ui/select";
 import { AppContext } from "../../contexts/app.context";
 import mainPath from "../../constants/path";
-import { Document, Page } from "react-pdf";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 
 interface PrinterData {
   id: number;
@@ -59,6 +59,13 @@ export default function PrintingPage() {
     { label: "Cơ sở Dĩ An Bình Dương", value: "DA" },
   ]);
   const [selectedCampus, setSelectedCampus] = useState("");
+
+  const [file, setFile] = useState(null);
+  const [fileUrl, setFileUrl] = useState(null);
+  const [numPages, setNumPages] = useState(0);
+  GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  //ủa
 
   const [printData, setPrintData] = useState<PrinterData[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState("");
@@ -103,15 +110,26 @@ export default function PrintingPage() {
       if (file.type === "application/pdf") {
         setUploadedFiles([...uploadedFiles, ...files]);
         setPdfFile(URL.createObjectURL(file));
+        const fileBlobUrl = URL.createObjectURL(file);
+        let pdf;
+        try {
+          pdf = await getDocument(fileBlobUrl).promise;
+          console.log("Chay được ồi>>>>", pdf.numPages);
+          setNumPages(pdf.numPages);
+        } catch (error) {
+          console.error("Error loading PDF:", error);
+        }
+        //Ma thuật đen đó :)) ở dưới warning kệ nó /đ/i k sao đâu//từ từ, chờ t tí, lỗi đó là do nó chưa update hay sao đó,  mà khoan sao cái trên consolelog là pdf.numPages thì dưới cx phải z chứ, từ từm adu ngon ảo vcl z Bảo
+        //Ma thuật đen đó Dũng:)))))) ê mà giờ sao cái Bảo trì nó vẫn bấm đc z :)) à, là m mn nó k bấm đc đó he, oke, chờ tí
 
         setPrintRequestData({
           ...printRequestData,
-          document: { filetype: "A4", start: 1, end: 2 },
+          document: { filetype: "A4", start: 1, end: pdf?.numPages || 0 },
         });
 
         setPrintSettings({
           ...printSettings,
-          pages: `1-10`,
+          pages: `1-${pdf?.numPages}`,
         });
       } else {
         alert("Vui lòng chọn tệp PDF");
@@ -285,7 +303,7 @@ export default function PrintingPage() {
                               });
                             }
                           }}
-                          disabled={isDisabled} // Chỉ disable máy in OFF
+                          disabled={printer.printerStatus !== "ON"} // gioâ~ còn cái overflowok t đang render hơi ngu nên nó render ra hơi lâu á
                         >
                           <div
                             className={`font-semibold ${

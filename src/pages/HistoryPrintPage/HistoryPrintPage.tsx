@@ -80,9 +80,9 @@ export default function HistoryPrintPage() {
         ) : (
           <h1 className="mb-8 text-4xl font-bold tracking-wide text-center text-blue-600 uppercase">
             Lịch Sử In
-          </h1>
+          </h1> // m có nghĩ là do cái co, nãy t xóa nó rồi, mà nó cũng k mất adu ảo
         )}
-        <div className="w-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl">
+        <div className="w-full mx-auto overflow-hidden bg-white rounded-lg shadow-xl">
           {loading ? (
             <LoadingPage />
           ) : (
@@ -237,3 +237,5 @@ export default function HistoryPrintPage() {
     </div>
   );
 }
+
+//chờ tí, để t quăng qua máy phátoke bảo
