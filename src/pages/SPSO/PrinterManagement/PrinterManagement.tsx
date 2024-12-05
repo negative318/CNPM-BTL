@@ -9,7 +9,7 @@ const PrinterManagement = () => {
     <div
       style={{
         padding: '40px',
-        maxWidth: '900px', // Increased the max-width for a better layout on PC
+        maxWidth: '900px',
         margin: 'auto',
         background: '#f5f5f5',
         borderRadius: '10px',

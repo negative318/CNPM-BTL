@@ -22,7 +22,6 @@ const ModifyPrinter: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  // Fetch dữ liệu máy in
   useEffect(() => {
     if (!isAuthenticated || !profile) return;
 
@@ -83,7 +82,7 @@ const ModifyPrinter: React.FC = () => {
       const newPrinter = await response.json();
       const formattedPrinter: Printer = {
         id: newPrinter.id,
-        status: "Khả dụng", // Máy in mặc định khả dụng khi thêm
+        status: "Khả dụng",
         campus: newPrinter.campusName,
         building: newPrinter.buildingName,
         location: `Phòng ${newPrinter.roomNumber}`,
