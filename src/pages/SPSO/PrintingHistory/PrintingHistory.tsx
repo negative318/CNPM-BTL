@@ -151,7 +151,10 @@ const PrintingHistory: React.FC = () => {
           columns={columns}
           dataSource={filteredData}
           loading={isLoading}
-          pagination={{ pageSize: 5 }}
+          pagination={{
+            pageSize: 50,
+            position: ['bottomCenter'], // Căn giữa thanh phân trang
+          }}
           style={{ borderRadius: '10px', overflow: 'hidden' }}
           locale={{ emptyText: 'Không có dữ liệu' }}
         />

@@ -1,8 +1,22 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Button, Input, Modal, Select, Space, Typography, Card, Row, Col, Form } from "antd";
+import {
+  Button,
+  Input,
+  Modal,
+  Select,
+  Space,
+  Typography,
+  Card,
+  Row,
+  Col,
+  Form,
+  message,
+  Popconfirm,
+} from "antd";
 import { AppContext } from "../../../contexts/app.context";
 
 const { Title } = Typography;
+const { Option } = Select;
 
 interface Printer {
   id: number;
@@ -13,90 +27,221 @@ interface Printer {
 }
 
 const ModifyPrinter: React.FC = () => {
-  const { isAuthenticated, profile } = useContext(AppContext); // Lấy thông tin từ context
+  const { isAuthenticated, profile } = useContext(AppContext);
   const [printerData, setPrinterData] = useState<Printer[]>([]);
   const [filteredPrinters, setFilteredPrinters] = useState<Printer[]>([]);
   const [selectedCampus, setSelectedCampus] = useState<string | undefined>();
   const [selectedBuilding, setSelectedBuilding] = useState<string | undefined>();
-  const [selectedPrinter, setSelectedPrinter] = useState<Printer | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
-  // Fetch dữ liệu máy in
-  useEffect(() => {
-    if (!isAuthenticated || !profile) return;
+  const fetchPrinters = async () => {
+    if (!isAuthenticated || !profile || !selectedCampus) {
+      message.warning("Vui lòng đăng nhập và chọn cơ sở để tiếp tục!");
+      return;
+    }
 
-    const fetchPrinters = async () => {
-      try {
-        const token = profile?.jwtToken || "";
-        const response = await fetch(
-          "http://localhost:8080/api/v1/printers/status?location=LTK&pageNumber=0&pageSize=10",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const formattedPrinters: Printer[] = data.content.map((printer: any) => ({
-          id: printer.id,
-          status: printer.printerStatus === "ON" ? "Khả dụng" : "Bảo trì",
-          campus: printer.campusName,
-          building: printer.buildingName,
-          location: `Phòng ${printer.roomNumber}`,
-        }));
-
-        setPrinterData(formattedPrinters);
-        setFilteredPrinters(formattedPrinters);
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu máy in:", error);
-      }
-    };
-
-    fetchPrinters();
-  }, [isAuthenticated, profile]);
-
-  // Thêm máy in mới
-  const handleAddPrinter = async (values: any) => {
     try {
+      setLoading(true);
       const token = profile?.jwtToken || "";
+      const response = await fetch(
+        `http://localhost:8080/api/v1/printers/status?location=${selectedCampus}&pageNumber=0&pageSize=10`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || "Không thể tải dữ liệu máy in!");
+      }
+
+      const data = await response.json();
+      const formattedPrinters: Printer[] = data.content.map((printer: any) => ({
+        id: printer.id,
+        status: printer.printerStatus === "ON" ? "Khả dụng" : "Bảo trì",
+        campus: printer.campusName,
+        building: printer.buildingName,
+        location: `Phòng ${printer.roomNumber}`,
+      }));
+
+      if (formattedPrinters.length === 0) {
+        message.info("Không tìm thấy máy in nào.");
+      }
+
+      setPrinterData(formattedPrinters);
+      setFilteredPrinters(formattedPrinters);
+    } catch (error: any) {
+      console.error("Lỗi khi tải dữ liệu máy in:", error);
+      message.error(error.message || "Không thể tải dữ liệu máy in!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPrinters();
+  }, [isAuthenticated, profile, selectedCampus]);
+
+  const handleAddPrinter = async (values: any) => {
+    setLoading(true);
+    try {
+      const token = profile?.jwtToken || ""; // Lấy JWT Token từ profile
+      if (!token) {
+        throw new Error("Token xác thực không hợp lệ. Vui lòng đăng nhập lại.");
+      }
+  
+      // Cấu trúc payload theo yêu cầu
+      const payload = {
+        model: values.model.trim(),
+        description: values.description.trim(),
+        brand: values.brand.trim(),
+        buildingName: values.buildingName.trim(),
+        campusName: values.campusName,
+        roomNumber: values.roomNumber.trim(),
+      };
+  
+      // Thực hiện POST request
       const response = await fetch("http://localhost:8080/api/v1/printers", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
-
+  
+      // Kiểm tra kết quả response
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || "Không thể thêm máy in!");
       }
-
+  
       const newPrinter = await response.json();
+  
+      // Định dạng dữ liệu máy in mới để thêm vào danh sách
       const formattedPrinter: Printer = {
         id: newPrinter.id,
-        status: "Khả dụng", // Máy in mặc định khả dụng khi thêm
+        status: "Khả dụng", // Máy in mới mặc định là khả dụng
         campus: newPrinter.campusName,
         building: newPrinter.buildingName,
         location: `Phòng ${newPrinter.roomNumber}`,
       };
-
+  
       // Cập nhật danh sách máy in
       setPrinterData([...printerData, formattedPrinter]);
       setFilteredPrinters([...filteredPrinters, formattedPrinter]);
-
+  
+      // Đóng modal, reset form và thông báo thành công
       setIsModalVisible(false);
       form.resetFields();
-    } catch (error) {
-      console.error("Lỗi khi thêm máy in mới:", error);
+      message.success("Thêm máy in thành công!");
+    } catch (error: any) {
+      console.error("Lỗi khi thêm máy in:", error);
+      message.error(error.message || "Không thể thêm máy in. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
+
+  const handleTogglePrinterStatus = async (printerId: number) => {
+    setLoading(true);
+    try {
+      const token = profile?.jwtToken || ""; // Lấy JWT Token từ profile
+      if (!token) {
+        throw new Error("Token xác thực không hợp lệ. Vui lòng đăng nhập lại.");
+      }
+  
+      const printer = printerData.find((p) => p.id === printerId); // Tìm máy in theo ID
+      if (!printer) {
+        throw new Error("Không tìm thấy máy in để cập nhật.");
+      }
+  
+      // Đảo ngược trạng thái hiện tại của máy in
+      const newStatus = printer.status === "Khả dụng" ? "OFF" : "ON";
+  
+      // Cấu trúc body cho PUT request
+      const payload = {
+        brand: null,
+        buildingName: printer.building,
+        campusName: printer.campus,
+        roomNumber: printer.location.replace("Phòng ", ""),
+        count: 100,
+        printerStatus: newStatus,
+        recentMaintenanceDate: new Date().toISOString(),
+        max: 200,
+      };
+  
+      // Thực hiện PUT request
+      const response = await fetch(`http://localhost:8080/api/v1/printers/${printerId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      // Kiểm tra kết quả response
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || "Không thể thay đổi trạng thái máy in!");
+      }
+  
+      const updatedPrinter = await response.json();
+  
+      // Cập nhật danh sách máy in sau khi thay đổi
+      setPrinterData((prev) =>
+        prev.map((p) =>
+          p.id === printerId
+            ? { ...p, status: updatedPrinter.printerStatus === "ON" ? "Khả dụng" : "Bảo trì" }
+            : p
+        )
+      );
+  
+      message.success("Thay đổi trạng thái máy in thành công!");
+    } catch (error: any) {
+      console.error("Lỗi khi thay đổi trạng thái máy in:", error);
+      message.error(error.message || "Không thể thay đổi trạng thái. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
+
+  const handleDeletePrinter = async (printerId: number) => {
+    setLoading(true);
+    try {
+      const token = profile?.jwtToken || "";
+      const response = await fetch(`http://localhost:8080/api/v1/printers/${printerId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || "Không thể xóa máy in!");
+      }
+
+      setPrinterData((prev) => prev.filter((printer) => printer.id !== printerId));
+      setFilteredPrinters((prev) => prev.filter((printer) => printer.id !== printerId));
+      message.success("Xóa máy in thành công!");
+    } catch (error: any) {
+      console.error("Lỗi khi xóa máy in:", error);
+      message.error(error.message || "Không thể xóa máy in. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,6 +252,9 @@ const ModifyPrinter: React.FC = () => {
         (!selectedBuilding || printer.building === selectedBuilding)
     );
     setFilteredPrinters(result);
+    if (result.length === 0) {
+      message.info("Không có máy in nào phù hợp với tiêu chí tìm kiếm.");
+    }
   };
 
   const handleResetSearch = () => {
@@ -121,28 +269,26 @@ const ModifyPrinter: React.FC = () => {
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
         <Select
           placeholder="Chọn cơ sở"
-          value={selectedCampus}
           onChange={(value) => setSelectedCampus(value)}
-          style={{ width: "100%" }}
+          style={{ width: "300px" }}
         >
-          {Array.from(new Set(printerData.map((printer) => printer.campus))).map((campus) => (
-            <Select.Option key={campus} value={campus}>
-              {campus}
-            </Select.Option>
-          ))}
+          <Option value="LTK">Cơ sở Lý Thường Kiệt</Option>
+          <Option value="DA">Cơ sở Dĩ An</Option>
         </Select>
+
         <Select
           placeholder="Chọn tòa nhà"
           value={selectedBuilding}
           onChange={(value) => setSelectedBuilding(value)}
-          style={{ width: "100%" }}
+          style={{ width: "300px" }}
         >
           {Array.from(new Set(printerData.map((printer) => printer.building))).map((building) => (
-            <Select.Option key={building} value={building}>
+            <Option key={building} value={building}>
               {building}
-            </Select.Option>
+            </Option>
           ))}
         </Select>
+
         <Space>
           <Button type="primary" onClick={handleSearch}>
             Tìm kiếm
@@ -155,55 +301,137 @@ const ModifyPrinter: React.FC = () => {
       </Space>
 
       <Row gutter={[20, 20]} style={{ marginTop: "20px" }}>
-        {filteredPrinters.map((printer) => (
-          <Col key={printer.id} span={6}>
-            <Card
-              hoverable
-              onClick={() => setSelectedPrinter(printer)}
-              style={{
-                backgroundColor: printer.status === "Khả dụng" ? "#d4edda" : "#f8d7da",
-              }}
-            >
-              <Title level={4}>{`Máy in ${printer.id}`}</Title>
-              <p>{printer.location}</p>
-              <p style={{ color: printer.status === "Khả dụng" ? "green" : "red" }}>{printer.status}</p>
-            </Card>
-          </Col>
-        ))}
+        {filteredPrinters.length === 0 ? (
+          <p>Không có máy in nào phù hợp.</p>
+        ) : (
+          filteredPrinters.map((printer) => (
+            <Col key={printer.id} span={6}>
+              <Card
+                hoverable
+                style={{
+                  backgroundColor: printer.status === "Khả dụng" ? "#d4edda" : "#f8d7da",
+                }}
+                actions={[
+                  <Button
+                    type="link"
+                    onClick={() => handleTogglePrinterStatus(printer.id)}
+                    loading={loading}
+                  >
+                    {printer.status === "Khả dụng" ? "Bảo trì" : "Khả dụng"}
+                  </Button>,
+                  <Popconfirm
+                    title="Bạn có chắc chắn muốn xóa máy in này?"
+                    onConfirm={() => handleDeletePrinter(printer.id)}
+                    okText="Xóa"
+                    cancelText="Hủy"
+                  >
+                    <Button type="link" danger loading={loading}>
+                      Xóa
+                    </Button>
+                  </Popconfirm>,
+                ]}
+              >
+                <Title level={4}>{printer.location}</Title>
+                <p>Tòa nhà: {printer.building}</p>
+                <p>Cơ sở: {printer.campus}</p>
+                <p>Trạng thái: {printer.status}</p>
+              </Card>
+            </Col>
+          ))
+        )}
       </Row>
-
-      {/* Modal thêm máy in */}
       <Modal
         title="Thêm máy in mới"
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
-        <Form form={form} layout="vertical" onFinish={handleAddPrinter}>
-          <Form.Item name="model" label="Model" rules={[{ required: true, message: "Vui lòng nhập model" }]}>
-            <Input />
+        <Form
+          form={form}
+          onFinish={handleAddPrinter}
+          layout="vertical"
+          initialValues={{
+            model: "",
+            description: "",
+            brand: "",
+            buildingName: "",
+            campusName: "",
+            roomNumber: "",
+          }}
+        >
+          <Form.Item
+            label="Model máy in"
+            name="model"
+            rules={[
+              { required: true, message: "Vui lòng nhập model máy in!" },
+              { max: 100, message: "Model không được vượt quá 100 ký tự!" },
+            ]}
+          >
+            <Input placeholder="Nhập model máy in (ví dụ: Epson Workforce)" />
           </Form.Item>
-          <Form.Item name="description" label="Mô tả" rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}>
-            <Input />
+
+          <Form.Item
+            label="Mô tả"
+            name="description"
+            rules={[
+              { required: true, message: "Vui lòng nhập mô tả cho máy in!" },
+              { max: 200, message: "Mô tả không được vượt quá 200 ký tự!" },
+            ]}
+          >
+            <Input.TextArea placeholder="Nhập mô tả máy in (ví dụ: All-in-one wireless color printer)" />
           </Form.Item>
-          <Form.Item name="brand" label="Thương hiệu" rules={[{ required: true, message: "Vui lòng nhập thương hiệu" }]}>
-            <Input />
+
+          <Form.Item
+            label="Thương hiệu"
+            name="brand"
+            rules={[
+              { required: true, message: "Vui lòng nhập thương hiệu máy in!" },
+              { max: 50, message: "Thương hiệu không được vượt quá 50 ký tự!" },
+            ]}
+          >
+            <Input placeholder="Nhập thương hiệu máy in (ví dụ: Epson)" />
           </Form.Item>
-          <Form.Item name="buildingName" label="Tên tòa nhà" rules={[{ required: true, message: "Vui lòng nhập tên tòa nhà" }]}>
-            <Input />
+
+          <Form.Item
+            label="Tên tòa nhà"
+            name="buildingName"
+            rules={[
+              { required: true, message: "Vui lòng nhập tên tòa nhà!" },
+              { max: 50, message: "Tên tòa nhà không được vượt quá 50 ký tự!" },
+            ]}
+          >
+            <Input placeholder="Nhập tên tòa nhà (ví dụ: B6)" />
           </Form.Item>
-          <Form.Item name="campusName" label="Tên cơ sở" rules={[{ required: true, message: "Vui lòng nhập tên cơ sở" }]}>
-            <Input />
+
+          <Form.Item
+            label="Tên cơ sở"
+            name="campusName"
+            rules={[
+              { required: true, message: "Vui lòng chọn tên cơ sở!" },
+            ]}
+          >
+            <Select placeholder="Chọn cơ sở">
+              <Option value="LTK">Lý Thường Kiệt</Option>
+              <Option value="DA">Dĩ An</Option>
+            </Select>
           </Form.Item>
-          <Form.Item name="roomNumber" label="Số phòng" rules={[{ required: true, message: "Vui lòng nhập số phòng" }]}>
-            <Input />
+
+          <Form.Item
+            label="Số phòng"
+            name="roomNumber"
+            rules={[
+              { required: true, message: "Vui lòng nhập số phòng!" },
+              { pattern: /^[a-zA-Z0-9\-]+$/, message: "Số phòng chỉ được chứa chữ, số và dấu gạch ngang!" },
+            ]}
+          >
+            <Input placeholder="Nhập số phòng (ví dụ: 408 hoặc H6-704)" />
           </Form.Item>
-          <Space style={{ width: "100%", justifyContent: "end" }}>
-            <Button onClick={() => setIsModalVisible(false)}>Hủy</Button>
-            <Button type="primary" htmlType="submit">
-              Thêm
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Thêm máy in
             </Button>
-          </Space>
+          </Form.Item>
         </Form>
       </Modal>
     </div>
