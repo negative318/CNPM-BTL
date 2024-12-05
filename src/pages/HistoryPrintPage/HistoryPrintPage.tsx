@@ -43,7 +43,7 @@ export default function HistoryPrintPage() {
               },
             }
           );
-
+          console.log(response);
           const data = response.data.content;
           if (data.length === 0) {
             break;
@@ -68,22 +68,28 @@ export default function HistoryPrintPage() {
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentLogs = [...logs].reverse().slice(startIndex, endIndex); // Đảo ngược logs
+  const currentLogs = [...logs].reverse().slice(startIndex, endIndex);
 
   const totalPages = Math.ceil(logs.length / itemsPerPage);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="container px-4 py-10 mx-auto">
-        <h1 className="mb-8 text-4xl font-bold tracking-wide text-center text-blue-600 uppercase">
-          Lịch Sử In
-        </h1>
-
+        {loading ? (
+          <LoadingPage />
+        ) : (
+          <h1 className="mb-8 text-4xl font-bold tracking-wide text-center text-blue-600 uppercase">
+            Lịch Sử In
+          </h1>
+        )}
         <div className="w-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl">
-          <h2 className="py-4 text-2xl font-semibold text-center text-white bg-gradient-to-r from-blue-400 to-blue-600">
-            Lịch sử in
-          </h2>
-
+          {loading ? (
+            <LoadingPage />
+          ) : (
+            <h2 className="py-4 text-2xl font-semibold text-center text-white bg-gradient-to-r from-blue-400 to-blue-600">
+              Lịch sử in
+            </h2>
+          )}
           {loading ? (
             <LoadingPage />
           ) : (

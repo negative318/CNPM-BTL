@@ -20,6 +20,7 @@ import {
 } from "../../components/ui/select";
 import { AppContext } from "../../contexts/app.context";
 import mainPath from "../../constants/path";
+import { Document, Page } from "react-pdf";
 
 interface PrinterData {
   id: number;
@@ -105,7 +106,7 @@ export default function PrintingPage() {
 
         setPrintRequestData({
           ...printRequestData,
-          document: { filetype: "A4", start: 1, end: 1000 },
+          document: { filetype: "A4", start: 1, end: 2 },
         });
 
         setPrintSettings({
@@ -262,7 +263,7 @@ export default function PrintingPage() {
                     .map((printer) => {
                       const isSelected =
                         selectedPrinter === printer.id.toString();
-                      const isDisabled = printer.printerStatus === "BROKEN";
+                      const isDisabled = printer.printerStatus === "OFF";
 
                       return (
                         <Button
@@ -284,7 +285,7 @@ export default function PrintingPage() {
                               });
                             }
                           }}
-                          disabled={isDisabled}
+                          disabled={isDisabled} // Chỉ disable máy in OFF
                         >
                           <div
                             className={`font-semibold ${
