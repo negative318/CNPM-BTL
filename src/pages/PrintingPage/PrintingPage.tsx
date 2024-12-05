@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import ReactDatePicker from "react-datepicker";
 import axios, { AxiosError } from "axios";
-import { Check } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import {
   Card,
@@ -19,14 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
 import { AppContext } from "../../contexts/app.context";
 import mainPath from "../../constants/path";
 
@@ -59,7 +50,6 @@ interface PrintRequestData {
   printerID: string;
   jwtToken?: string;
 }
-
 export default function PrintingPage() {
   const { profile } = useContext(AppContext);
   const [step, setStep] = useState(1);
@@ -74,8 +64,6 @@ export default function PrintingPage() {
 
   const [selectedPrinter, setSelectedPrinter] = useState<string | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [referenceCode, setReferenceCode] = useState("");
   const [printSettings, setPrintSettings] = useState<PrintSettings>({
     copies: 1,
     paperSize: "A4",
@@ -558,11 +546,6 @@ export default function PrintingPage() {
   };
 
   const handlePrintSubmit = async () => {
-    const newReferenceCode = Math.floor(Math.random() * 100000000000)
-      .toString()
-      .padStart(11, "0");
-    setReferenceCode(newReferenceCode);
-
     const configuration = {
       logDate: logDate ? logDate.toISOString() : "",
       pagePerSheet: printRequestData.pagePerSheet,
@@ -598,7 +581,6 @@ export default function PrintingPage() {
       if (response.status === 200) {
         console.log(response.status);
         console.log("Print request successful:", response.data);
-        // setShowSuccessDialog(true);
         window.location.href = mainPath.historyprintpage;
       } else {
         alert("Đã xảy ra lỗi không xác định.");
@@ -692,36 +674,6 @@ export default function PrintingPage() {
           </div>
         </CardContent>
       </Card>
-      {/* 
-      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="p-6 bg-white rounded-lg shadow-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-blue-600">
-              <Check className="w-6 h-6 text-green-500" />
-              Yêu cầu in ấn thành công
-            </DialogTitle>
-            <DialogDescription className="pt-4">
-              <div className="space-y-4">
-                <div className="p-4 border rounded-lg shadow-sm bg-blue-50">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-700">Số trang:</div>
-                    <div className="text-sm font-semibold text-right text-gray-900">
-                      {uploadedFiles.reduce((acc, file) => acc + 1, 0) * printSettings.copies} trang
-                    </div>
-                    <div className="text-sm font-medium text-gray-700">Mã tham chiếu:</div>
-                    <div className="font-mono text-sm text-right text-blue-600">
-                      {referenceCode}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Vui lòng lưu lại mã tham chiếu để theo dõi trạng thái in ấn của bạn.
-                </p>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog> */}
     </div>
   );
 }
