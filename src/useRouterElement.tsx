@@ -17,11 +17,7 @@ import HistoryBuyPage from './pages/HistoryBuyPage'
 
 
 function RejectedRoute() {
-  const { isAuthenticated, loadingPage } = useContext(AppContext);
-
-  if (loadingPage) {
-    return <LoadingPage />;
-  }
+  const { isAuthenticated } = useContext(AppContext);
 
   return isAuthenticated ? (
     <Suspense fallback={<LoadingPage />}>

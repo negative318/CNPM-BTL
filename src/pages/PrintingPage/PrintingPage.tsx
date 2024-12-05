@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { ChevronLeft, Check } from 'lucide-react'
+import ReactDatePicker from "react-datepicker";
+import axios, { AxiosError } from 'axios';
+import { Check } from 'lucide-react'
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { RadioGroup, RadioGroupItem } from "../../components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +17,8 @@ import {
   DialogTitle,
 } from "../../components/ui/dialog"
 import { AppContext } from '../../contexts/app.context';
+import mainPath from '../../constants/path';
+
 
 interface PrinterData {
   id: number;
@@ -33,18 +37,34 @@ interface PrintSettings {
   pages: string
 }
 
+
+interface PrintRequestData {
+  logDate: Date | null;
+  pagePerSheet: number;
+  numberOfCopy: number;
+  document: {
+    filetype: string;
+    start: number;
+    end: number;
+  };
+  printerID: string;
+  jwtToken?: string;
+}
+
+
+
 export default function PrintingPage() {
   const {profile} = useContext(AppContext);
   const [step, setStep] = useState(1)
-  const [campuses, setCampuses] = useState([
+  const [campuses] = useState([
     { label: "Cơ sở Lý Thường Kiệt", value: "LTK" },
-    { label: "Cơ sở Dĩ An Bình Dương", value: "BD" },
+    { label: "Cơ sở Dĩ An Bình Dương", value: "DA" },
   ]);
   const [selectedCampus, setSelectedCampus] = useState("");
 
   const [printData, setPrintData] = useState<PrinterData[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState("");
-
+  
   const [selectedPrinter, setSelectedPrinter] = useState<string | null>(null)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
@@ -56,19 +76,59 @@ export default function PrintingPage() {
     scaling: 100,
     pages: "all",
   })
+  const [printRequestData, setPrintRequestData] = useState<PrintRequestData>({
+    logDate: new Date(),
+    pagePerSheet: 1,
+    numberOfCopy: 1,
+    document: {
+      filetype: "A4",
+      start: 1,
+      end: 2,
+    },
+    printerID: "0",
+    jwtToken: profile?.jwtToken || "",
+  });
+
+    const [logDate, setLogDate] = useState<Date | null>(new Date());
+
+    const handleDateChange = (date: Date | null) => {
+      setLogDate(date);
+      setPrintRequestData({
+        ...printRequestData,
+        logDate: date,
+      });
+    };
+
 
   const [pdfFile, setPdfFile] = useState<string | null>(null);
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       const file = files[0];
       if (file.type === "application/pdf") {
         setUploadedFiles([...uploadedFiles, ...files]);
         setPdfFile(URL.createObjectURL(file));
+        
+          setPrintRequestData({
+            ...printRequestData,
+            document: {filetype:"A4", start: 1, end: 10 }, // Cập nhật dữ liệu request
+          });
+  
+          // Cập nhật mặc định `pages` thành "all"
+          setPrintSettings({
+            ...printSettings,
+            pages: `1-10`,
+          });
       } else {
         alert("Vui lòng chọn tệp PDF");
       }
     }
+  };
+
+  const handleCopiesChange = (value: string) => {
+    const copies = parseInt(value) || 1;
+    setPrintSettings({ ...printSettings, copies });
+    setPrintRequestData({ ...printRequestData, numberOfCopy: copies });
   };
 
   const handleRemoveFile = (fileName: string) => {
@@ -93,12 +153,20 @@ export default function PrintingPage() {
         setStep(newStep);
       }
     }
+    console.log(step, printRequestData)
   }
 
+  useEffect(() => {
+    console.log("printRequestData updated:", printRequestData);
+  }, [printRequestData]);
 
   useEffect(() => {
     if (selectedCampus) {
       console.log("Stored jwtToken:", localStorage.getItem("jwtToken"));
+      setPrintRequestData((prev) => ({
+        ...prev,
+        jwtToken: profile?.jwtToken,
+      }));
       axios
         .get(`http://localhost:8080/api/v1/printers/status?location=${selectedCampus}&pageNumber=0&pageSize=10`, {
           headers: {
@@ -134,7 +202,7 @@ export default function PrintingPage() {
               <RadioGroup
                 value={selectedCampus || ""}
                 onValueChange={(value) => {
-                  setSelectedCampus(value); // Cập nhật campus
+                  setSelectedCampus(value);
                 }}
                 className="flex flex-wrap gap-4"
               >
@@ -157,7 +225,7 @@ export default function PrintingPage() {
                   value={selectedBuilding || ""}
                   onValueChange={(value) => {
                     setSelectedBuilding(value);
-                    setSelectedPrinter(null); // Reset printer selection
+                    setSelectedPrinter(null);
                   }}
                 >
                   <SelectTrigger className="w-full max-w-md">
@@ -183,14 +251,14 @@ export default function PrintingPage() {
               <div className="space-y-4">
                 <Label className="text-lg font-medium">Chọn máy in</Label>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {printData
-                    .filter((printer) => printer.buildingName === selectedBuilding)
-                    .map((printer) => {
-                      const isSelected = selectedPrinter === printer.id.toString();
-                      const isDisabled = printer.printerStatus === "maintenance";
-  
-                      return (
-                        <Button
+                {printData
+                  .filter((printer) => printer.buildingName === selectedBuilding)
+                  .map((printer) => {
+                    const isSelected = selectedPrinter === printer.id.toString();
+                    const isDisabled = printer.printerStatus === "BROKEN";
+                    
+                    return (
+                      <Button
                           key={printer.id}
                           variant={isSelected ? "default" : "outline"}
                           className={`flex-col items-start h-auto p-4 space-y-2 border-2 rounded-lg transition-colors ${
@@ -200,7 +268,15 @@ export default function PrintingPage() {
                               ? "bg-blue-100 border-blue-500 hover:bg-blue-200"
                               : "bg-white border-gray-300 hover:bg-gray-100"
                           }`}
-                          onClick={() => setSelectedPrinter(printer.id.toString())}
+                          onClick={() => {
+                            if (!isDisabled) {
+                              setSelectedPrinter(printer.id.toString());
+                              setPrintRequestData({
+                                ...printRequestData,
+                                printerID: printer.id.toString(),
+                              });
+                            }
+                          }}
                           disabled={isDisabled}
                         >
                           <div className={`font-semibold ${isSelected ? "text-blue-600" : ""}`}>
@@ -214,8 +290,9 @@ export default function PrintingPage() {
                             {printer.printerStatus === "ON" ? "Khả dụng" : "Bảo trì"}
                           </div>
                         </Button>
-                      );
-                    })}
+                    );
+                  })}
+
                 </div>
               </div>
             )}
@@ -267,15 +344,13 @@ export default function PrintingPage() {
             <div className="space-y-4">
               <Label htmlFor="copies">Số bản in</Label>
               <Input
-                id="copies"
-                type="number"
-                min="1"
-                value={printSettings.copies}
-                onChange={(e) =>
-                  setPrintSettings({ ...printSettings, copies: parseInt(e.target.value) || 1 })
-                }
-                placeholder="Nhập số bản in"
-              />
+                  id="copies"
+                  type="number"
+                  min="1"
+                  value={printSettings.copies}
+                  onChange={(e) => handleCopiesChange(e.target.value)}
+                  placeholder="Nhập số bản in"
+                />
             </div>
       
             <div className="space-y-4">
@@ -297,37 +372,58 @@ export default function PrintingPage() {
             </div>
       
             <div className="space-y-4">
-              <Label>Số mặt giấy</Label>
-              <RadioGroup
-                value={printSettings.sides}
-                onValueChange={(value: "1" | "2") =>
-                  setPrintSettings({ ...printSettings, sides: value })
-                }
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="1" id="sides-1" />
-                  <Label htmlFor="sides-1">1 mặt</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="2" id="sides-2" />
-                  <Label htmlFor="sides-2">2 mặt</Label>
-                </div>
-              </RadioGroup>
-            </div>
-      
-            <div className="space-y-4">
-              <Label htmlFor="pages">Trang cần in</Label>
-              <Input
-                id="pages"
-                value={printSettings.pages}
-                onChange={(e) =>
-                  setPrintSettings({ ...printSettings, pages: e.target.value })
-                }
-                placeholder="Ví dụ: 1-5, 8, 11-13"
-              />
-            </div>
-          </div>
+        <Label htmlFor="pagePerSheet">Số trang mỗi mặt</Label>
+        <Select
+          value={printRequestData.pagePerSheet.toString()}
+          onValueChange={(value) =>
+            setPrintRequestData({
+              ...printRequestData,
+              pagePerSheet: parseInt(value),
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn số trang mỗi mặt" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">1 trang</SelectItem>
+            <SelectItem value="2">2 trang</SelectItem>
+            <SelectItem value="4">4 trang</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-4">
+        <Label htmlFor="pages">Trang cần in</Label>
+        <Input
+          id="pages"
+          value={printSettings.pages}
+          onChange={(e) =>
+            setPrintSettings({ ...printSettings, pages: e.target.value })
+          }
+          placeholder={`Ví dụ: 1-5, 8, 11-13`}
+        />
+        <p className="text-sm text-gray-500">
+          Mặc định: Tất cả các trang
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <Label htmlFor="log-date">Ngày giờ lấy bản in</Label>
+        <ReactDatePicker
+          id="log-date"
+          selected={logDate}
+          onChange={handleDateChange}
+          
+          dateFormat="Pp"
+          className="w-full p-2 border rounded-md"
+          placeholderText="Nhập hoặc chọn ngày giờ"
+          isClearable
+        />
+        <p className="text-sm text-gray-500">
+          Chọn hoặc nhập ngày và giờ mà bạn dự định đến lấy bản in.
+        </p>
+      </div>
+    </div>
         );
 
 
@@ -389,12 +485,70 @@ export default function PrintingPage() {
     }
   }
 
-  const handlePrintSubmit = () => {
-    // Generate a random reference code (in real app, this would come from the server)
-    const newReferenceCode = Math.floor(Math.random() * 100000000000).toString().padStart(11, '0')
-    setReferenceCode(newReferenceCode)
-    setShowSuccessDialog(true)
-  }
+  
+
+  const handlePrintSubmit = async () => {
+    // Tạo mã tham chiếu mới
+    const newReferenceCode = Math.floor(Math.random() * 100000000000).toString().padStart(11, '0');
+    setReferenceCode(newReferenceCode);
+  
+    const configuration = {
+      logDate: logDate ? logDate.toISOString() : '',
+      pagePerSheet: printRequestData.pagePerSheet,
+      numberOfCopy: printRequestData.numberOfCopy,
+      document: {
+        pageType: printRequestData.document.filetype || 'A4',
+        start: printRequestData.document.start || 1,
+        end: printRequestData.document.end || 1,
+      },
+      printerId: printRequestData.printerID,
+    };
+  
+    const formData = new FormData();
+
+    formData.append('file', uploadedFiles[0]);
+    
+    const blobConfig = new Blob([JSON.stringify(configuration)], { type: 'application/json' });
+    formData.append('configuration', blobConfig);
+    try {
+      const response = await axios.post('http://localhost:8080/api/v1/printing', formData, {
+        headers: {
+          "Content-type": "multipart/form-data",
+          "Authorization": `Bearer ${printRequestData.jwtToken}`,
+        },
+      });
+  
+      if (response.status === 200) {
+        console.log('Print request successful:', response.data);
+        setShowSuccessDialog(true);
+        window.location.href = mainPath.historyBuyPage;
+      } else {
+        alert('Đã xảy ra lỗi không xác định.');
+      }
+    } catch (error) {
+      console.error('Error submitting print request:', error);
+    
+      if (error instanceof AxiosError && error.response) {
+        const { status, data } = error.response;
+    
+        if (status === 400 && data.message === 'Không đủ giấy') {
+          alert('Không đủ giấy! Vui lòng mua thêm.');
+          window.location.href = mainPath.buypage;
+        } else {
+          console.error('Response data:', data);
+          alert('Đã xảy ra lỗi khi gửi yêu cầu in.');
+        }
+      } else if (error instanceof Error) {
+        alert(`Lỗi: ${error.message}`);
+      } else {
+        alert('Không thể kết nối với máy chủ.');
+      }
+    }
+    
+  };
+  
+  
+  
 
   return (
     <div className="container max-w-3xl p-4 mx-auto">
@@ -408,9 +562,17 @@ export default function PrintingPage() {
                   key={stepNumber}
                   variant={step === stepNumber ? "default" : "outline"}
                   size="sm"
+                  className={`relative ${
+                    step === stepNumber
+                      ? "bg-blue-500 text-white border-blue-600"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
                   onClick={() => setStepAndValidate(stepNumber)}
                 >
                   Bước {stepNumber}
+                  {step === stepNumber && (
+                    <span className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full"></span>
+                  )}
                 </Button>
               ))}
             </div>
@@ -429,7 +591,7 @@ export default function PrintingPage() {
         <CardContent className="pt-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold">
-              Bước {step}: {step === 1 ? "Chọn máy in" : step === 2 ? "Chọn tệp tải lên" : step === 2 ? "Chỉnh thông số in" : "Xem trước in"}
+              Bước {step}: {step === 1 ? "Chọn máy in" : step === 2 ? "Chọn tệp tải lên" : step === 3 ? "Chỉnh thông số in" : "Xem trước in"}
             </h2>
           </div>
           {renderStepContent()}
