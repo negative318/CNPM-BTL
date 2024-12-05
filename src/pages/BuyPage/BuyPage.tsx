@@ -1,26 +1,62 @@
-import { useState } from "react"
+import { useContext, useState } from "react";
+import { AppContext } from "../../contexts/app.context";
 
 export default function BuyPage() {
-  const [pages, setPages] = useState(0)
-  const [price, setPrice] = useState(0)
+  const calculatePrice = (pages: number): number => {
+    if (pages <= 50) return pages * 600;
+    if (pages <= 200) return pages * 570;
+    if (pages <= 500) return pages * 550;
+    return pages * 500;
+  };
 
-  const calculatePrice = (pages: number) => {
-    if (pages <= 50) return pages * 600
-    if (pages <= 200) return pages * 570
-    if (pages <= 500) return pages * 550
-    return pages * 500
-  }
+  const [pages, setPages] = useState<number>(0);
+  const [price, setPrice] = useState<number>(0);
 
   const handlePageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0
-    setPages(value)
-    setPrice(calculatePrice(value))
-  }
-  
+    const value = parseInt(e.target.value) || 0;
+    setPages(value);
+    setPrice(calculatePrice(value));
+  };
+  const { profile } = useContext(AppContext);
+  const handleConfirm = async () => {
+    const requestBody = {
+      numOfPages: pages,
+      pageType: "A4",
+    };
+
+    try {
+      console.log(profile?.jwtToken);
+      console.log(requestBody);
+      const response = await fetch(
+        "http://localhost:8080/api/v1/payments/buy_pages",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${profile?.jwtToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(result.message || "Thanh toán thành công!");
+        window.location.reload();
+      } else {
+        alert("Đã xảy ra lỗi trong quá trình thanh toán!");
+      }
+    } catch (error) {
+      alert("Không thể kết nối đến server!");
+    }
+  };
+
   return (
     <div className="flex flex-col justify-between h-full min-h-full bg-gray-100">
       <div className="container py-10 mx-auto">
-        <h1 className="mb-10 text-3xl font-bold text-center text-blue-700 uppercase">Mua Giấy</h1>
+        <h1 className="mb-10 text-3xl font-bold text-center text-blue-700 uppercase">
+          Mua Giấy
+        </h1>
 
         {/* Bảng giá */}
         <div className="mb-10">
@@ -35,24 +71,48 @@ export default function BuyPage() {
             </thead>
             <tbody>
               <tr>
-                <td className="px-4 py-2 text-center border border-gray-300">1</td>
-                <td className="px-4 py-2 text-center border border-gray-300">0 - 50</td>
-                <td className="px-4 py-2 text-center border border-gray-300">600 VNĐ</td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  1
+                </td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  0 - 50
+                </td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  600 VNĐ
+                </td>
               </tr>
               <tr>
-                <td className="px-4 py-2 text-center border border-gray-300">2</td>
-                <td className="px-4 py-2 text-center border border-gray-300">51 - 200</td>
-                <td className="px-4 py-2 text-center border border-gray-300">570 VNĐ</td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  2
+                </td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  51 - 200
+                </td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  570 VNĐ
+                </td>
               </tr>
               <tr>
-                <td className="px-4 py-2 text-center border border-gray-300">3</td>
-                <td className="px-4 py-2 text-center border border-gray-300">201 - 500</td>
-                <td className="px-4 py-2 text-center border border-gray-300">550 VNĐ</td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  3
+                </td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  201 - 500
+                </td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  550 VNĐ
+                </td>
               </tr>
               <tr>
-                <td className="px-4 py-2 text-center border border-gray-300">4</td>
-                <td className="px-4 py-2 text-center border border-gray-300">501 trở lên</td>
-                <td className="px-4 py-2 text-center border border-gray-300">500 VNĐ</td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  4
+                </td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  501 trở lên
+                </td>
+                <td className="px-4 py-2 text-center border border-gray-300">
+                  500 VNĐ
+                </td>
               </tr>
             </tbody>
           </table>
@@ -64,7 +124,10 @@ export default function BuyPage() {
           <div className="space-y-4">
             {/* Nhập số trang */}
             <div>
-              <label htmlFor="pages" className="block mb-2 font-medium text-gray-700">
+              <label
+                htmlFor="pages"
+                className="block mb-2 font-medium text-gray-700"
+              >
                 1. Nhập số trang:
               </label>
               <input
@@ -80,7 +143,10 @@ export default function BuyPage() {
 
             {/* Giá tiền */}
             <div>
-              <label htmlFor="price" className="block mb-2 font-medium text-gray-700">
+              <label
+                htmlFor="price"
+                className="block mb-2 font-medium text-gray-700"
+              >
                 2. Giá tiền:
               </label>
               <input
@@ -94,7 +160,9 @@ export default function BuyPage() {
 
             {/* Phương thức thanh toán */}
             <div>
-              <label className="block mb-2 font-medium text-gray-700">3. Phương thức thanh toán:</label>
+              <label className="block mb-2 font-medium text-gray-700">
+                3. Phương thức thanh toán:
+              </label>
               <div className="flex items-center space-x-4">
                 <input type="radio" id="bkpay" name="payment" defaultChecked />
                 <label htmlFor="bkpay" className="text-gray-700">
@@ -106,14 +174,13 @@ export default function BuyPage() {
             {/* Nút xác nhận */}
             <button
               className="w-full py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none"
-              onClick={() => alert("Thanh toán thành công!")}
+              onClick={handleConfirm}
             >
               Xác nhận
             </button>
           </div>
         </div>
       </div>
-
     </div>
-  )
+  );
 }

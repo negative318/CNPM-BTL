@@ -2,24 +2,26 @@ import { useState, useContext } from "react";
 import mainPath from "../../constants/path";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AppContext } from "../../contexts/app.context";
-import { faUser, faSignOutAlt, faInfoCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
+import {
+  faUser,
+  faSignOutAlt,
+  faInfoCircle,
+  faCopy,
+} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
-import { Link, NavLink } from "react-router-dom"
+import { Link, NavLink } from "react-router-dom";
 
 export default function MainHeader() {
   const { isAuthenticated, profile, handleLogout } = useContext(AppContext);
   const [showDropdown, setShowDropdown] = useState(false);
 
-
   const [paperCount, setPaperCount] = useState(50);
-
 
   const isSPSO = profile?.role === 2;
   const isStudent = profile?.role === 3;
 
   const titleClassname =
     "text-lightText uppercase justify-center rounded-lg col-span-1 relative flex items-center font-medium px-6 hover:bg-hoveringBg";
-
 
   const SPSOHeader = (
     <>
@@ -66,7 +68,7 @@ export default function MainHeader() {
           })
         }
       >
-        In Ấn
+        PRINT
       </NavLink>
       <NavLink
         to={mainPath.wallet}
@@ -98,10 +100,17 @@ export default function MainHeader() {
     >
       <div className="container flex justify-between w-full h-full">
         <div className="flex justify-start py-2 space-x-2">
-          <img className="h-12 rounded" src="\images\HCMCUT_logo.png" alt="logo" />
-          <Link to={mainPath.home} className="flex items-center text-lg font-bold uppercase desktop:text-2xl">
-          CNPM
-        </Link>
+          <img
+            className="h-12 rounded"
+            src="\images\HCMCUT_logo.png"
+            alt="logo"
+          />
+          <Link
+            to={mainPath.home}
+            className="flex items-center text-lg font-bold uppercase desktop:text-2xl"
+          >
+            CNPM
+          </Link>
         </div>
 
         <div className="flex items-center justify-center flex-1">
@@ -125,7 +134,9 @@ export default function MainHeader() {
             {isStudent && (
               <div className="flex items-center px-4 border-l border-gray-300">
                 <div className="flex items-center justify-center w-20 h-8 bg-gray-200 rounded-full">
-                  <span className="font-semibold text-webColor500">{paperCount} tờ</span>
+                  <span className="font-semibold text-webColor500">
+                    {paperCount} tờ
+                  </span>
                 </div>
               </div>
             )}
