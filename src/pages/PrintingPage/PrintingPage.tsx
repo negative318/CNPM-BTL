@@ -64,7 +64,7 @@ export default function PrintingPage() {
   const [fileUrl, setFileUrl] = useState(null);
   const [numPages, setNumPages] = useState(0);
   GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
   //ủa
 
   const [printData, setPrintData] = useState<PrinterData[]>([]);
