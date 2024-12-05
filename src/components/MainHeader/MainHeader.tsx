@@ -1,3 +1,10 @@
+import { useState, useContext } from "react";
+import mainPath from "../../constants/path";
+import { NavLink } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { AppContext } from "../../contexts/app.context";
+import { faUser, faSignOutAlt, faInfoCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
+import classNames from "classnames";
 import { useContext, useState } from "react"
 import mainPath from "../../constants/path"
 import { Link, NavLink } from "react-router-dom"
@@ -7,20 +14,90 @@ import { faUser, faSignOutAlt, faInfoCircle } from "@fortawesome/free-solid-svg-
 import classNames from "classnames"
 
 export default function MainHeader() {
-  const { isAuthenticated, profile, handleLogout } = useContext(AppContext)
-  const [showDropdown, setShowDropdown] = useState(false)
+  const { isAuthenticated, profile, handleLogout } = useContext(AppContext);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const menus = [
-    {
-      name: "TRANG CHỦ",
-      path: mainPath.home,
-    },
-  ]
+  // State cục bộ để quản lý số tờ
+  const [paperCount, setPaperCount] = useState(50); // Mặc định là 50 tờ (dữ liệu trên local)
 
-  const isAdmin = profile?.role == 2
+  // Xác định vai trò
+  const isSPSO = profile?.role === 2; // role 2: SPSO
+  const isStudent = profile?.role === 3; // role 3: student
 
   const titleClassname =
-    "text-lightText uppercase justify-center rounded-lg col-span-1 relative flex items-center font-medium px-6 hover:bg-hoveringBg"
+    "text-lightText uppercase justify-center rounded-lg col-span-1 relative flex items-center font-medium px-6 hover:bg-hoveringBg";
+
+  // Giao diện Header cho SPSO
+  const SPSOHeader = (
+    <>
+      <NavLink
+        to={mainPath.modifyPrinter}
+        className={({ isActive }) =>
+          classNames(titleClassname, {
+            "bg-hoveringBg": isActive,
+          })
+        }
+      >
+        Cấu hình máy
+      </NavLink>
+      <NavLink
+        to={mainPath.printerManagement}
+        className={({ isActive }) =>
+          classNames(titleClassname, {
+            "bg-hoveringBg": isActive,
+          })
+        }
+      >
+        Cấu hình in
+      </NavLink>
+      <NavLink
+        to={mainPath.printingHistory}
+        className={({ isActive }) =>
+          classNames(titleClassname, {
+            "bg-hoveringBg": isActive,
+          })
+        }
+      >
+        Lịch sử in
+      </NavLink>
+    </>
+  );
+
+  // Giao diện Header cho Student
+  const studentHeader = (
+    <>
+      <NavLink
+        to={mainPath.printing}
+        className={({ isActive }) =>
+          classNames(titleClassname, {
+            "bg-hoveringBg": isActive,
+          })
+        }
+      >
+        In Ấn
+      </NavLink>
+      <NavLink
+        to={mainPath.wallet}
+        className={({ isActive }) =>
+          classNames(titleClassname, {
+            "bg-hoveringBg": isActive,
+          })
+        }
+      >
+        WALLET
+      </NavLink>
+      <NavLink
+        to={mainPath.help}
+        className={({ isActive }) =>
+          classNames(titleClassname, {
+            "bg-hoveringBg": isActive,
+          })
+        }
+      >
+        NEED HELP?
+      </NavLink>
+    </>
+  );
 
   return (
     <div
@@ -35,59 +112,32 @@ export default function MainHeader() {
         </Link>
         </div>
 
-        <div className="flex items-center justify-center">
-          <div className="grid grid-cols-4 shrink-0 h-[70%] gap-2">
-            {menus.map((menu, index) => (
-              <NavLink
-                key={index}
-                to={menu.path}
-                className={({ isActive }) =>
-                  classNames(titleClassname, {
-                    "bg-hoveringBg": isActive,
-                  })
-                }
-              >
-                {menu.name}
-              </NavLink>
-            ))}
+        <div className="flex items-center justify-center flex-1">
+          {/* Các mục header */}
+          <div className="flex items-center gap-4">
+            <NavLink
+              to={mainPath.home}
+              className={({ isActive }) =>
+                classNames(titleClassname, {
+                  "bg-hoveringBg": isActive,
+                })
+              }
+            >
+              TRANG CHỦ
+            </NavLink>
 
-            {isAuthenticated && (
-              <NavLink
-                to={mainPath.printing}
-                className={({ isActive }) =>
-                  classNames(titleClassname, {
-                    "bg-hoveringBg": isActive,
-                  })
-                }
-              >
-                PRINTING
-              </NavLink>
-            )}
+            {/* Giao diện riêng cho SPSO */}
+            {isSPSO && SPSOHeader}
 
-            {isAuthenticated && !isAdmin && (
-              <NavLink
-                to={mainPath.wallet}
-                className={({ isActive }) =>
-                  classNames(titleClassname, {
-                    "bg-hoveringBg": isActive,
-                  })
-                }
-              >
-                WALLET
-              </NavLink>
-            )}
+            {/* Giao diện riêng cho Student */}
+            {isStudent && studentHeader}
 
-            {isAuthenticated && !isAdmin && (
-              <NavLink
-                to={mainPath.help}
-                className={({ isActive }) =>
-                  classNames(titleClassname, {
-                    "bg-hoveringBg": isActive,
-                  })
-                }
-              >
-                NEED HELP?
-              </NavLink>
+            {/* Phần hiển thị số tờ */}
+            {isStudent && (
+              <div className="flex items-center px-4 text-lightText font-medium border-l border-gray-300">
+                <FontAwesomeIcon icon={faCopy} className="mr-2" />
+                {paperCount} tờ
+              </div>
             )}
           </div>
         </div>
@@ -111,7 +161,6 @@ export default function MainHeader() {
               </button>
               {showDropdown && (
                 <div className="absolute right-0 w-48 bg-white rounded-lg shadow-md top-12">
-
                   <ul>
                     <li>
                       <NavLink
@@ -139,5 +188,5 @@ export default function MainHeader() {
         </div>
       </div>
     </div>
-  )
+  );
 }
