@@ -14,6 +14,7 @@ import PrintingPage from './pages/PrintingPage'
 import BuyPage from './pages/BuyPage'
 import HistoryBuyPage from './pages/HistoryBuyPage'
 import HistoryPrintPage from './pages/HistoryPrintPage'
+import Report from './pages/SPSO/Report'
 
 
 
@@ -121,6 +122,14 @@ function RejectedRoute() {
                   <HistoryPrintPage />
               </MainLayout>
           )
+        },
+        {
+          path: mainPath.report,
+          element: (
+              <MainLayout>
+                  <Report />
+                </MainLayout>
+            )
         },
         ],
       },

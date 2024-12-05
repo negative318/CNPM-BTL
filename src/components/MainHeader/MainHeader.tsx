@@ -1,5 +1,6 @@
 import { useState, useContext } from "react";
 import mainPath from "../../constants/path";
+import { Link,NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AppContext } from "../../contexts/app.context";
 import {
@@ -9,7 +10,6 @@ import {
   faCopy,
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
-import { Link, NavLink } from "react-router-dom";
 
 export default function MainHeader() {
   const { isAuthenticated, profile, handleLogout } = useContext(AppContext);
@@ -54,6 +54,16 @@ export default function MainHeader() {
         }
       >
         Lịch sử in
+      </NavLink>
+      <NavLink
+        to={mainPath.report}
+        className={({ isActive }) =>
+          classNames(titleClassname, {
+            "bg-hoveringBg": isActive,
+          })
+        }
+      >
+        Báo Cáo
       </NavLink>
     </>
   );
