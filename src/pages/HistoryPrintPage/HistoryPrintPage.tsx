@@ -15,6 +15,8 @@ interface Log {
   numberOfCopy: number;
   document?: {
     url: string;
+    start: number;
+    end: number;
   };
 }
 
@@ -80,7 +82,7 @@ export default function HistoryPrintPage() {
         ) : (
           <h1 className="mb-8 text-4xl font-bold tracking-wide text-center text-blue-600 uppercase">
             Lịch Sử In
-          </h1> // m có nghĩ là do cái co, nãy t xóa nó rồi, mà nó cũng k mất adu ảo
+          </h1>
         )}
         <div className="w-full mx-auto overflow-hidden bg-white rounded-lg shadow-xl">
           {loading ? (

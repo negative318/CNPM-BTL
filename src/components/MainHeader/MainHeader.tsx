@@ -71,6 +71,16 @@ export default function MainHeader() {
         PRINT
       </NavLink>
       <NavLink
+        to={mainPath.historyprintpage}
+        className={({ isActive }) =>
+          classNames(titleClassname, {
+            "bg-hoveringBg": isActive,
+          })
+        }
+      >
+        HISTORY PRINT
+      </NavLink>
+      <NavLink
         to={mainPath.wallet}
         className={({ isActive }) =>
           classNames(titleClassname, {
