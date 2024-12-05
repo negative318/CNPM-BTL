@@ -1,4 +1,7 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import mainPath from "../../constants/path";
+
+
 
 export default function Wallet() {
   return (
@@ -22,12 +25,14 @@ export default function Wallet() {
 
           {/* Buttons */}
           <div className="w-full mb-6 space-y-4">
-            <button className="w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
-              Buy Page
-            </button>
-            <button className="w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
-              History
-            </button>
+  
+              <Link to={mainPath.buypage} className="flex items-center justify-center flex-grow w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
+                Buy Page
+              </Link>
+            
+              <Link to={mainPath.historyBuyPage} className="flex items-center justify-center flex-grow w-full px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700">
+                History
+              </Link>
           </div>
 
           {/* Priority Text */}

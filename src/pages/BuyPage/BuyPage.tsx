@@ -16,7 +16,7 @@ export default function BuyPage() {
     setPages(value)
     setPrice(calculatePrice(value))
   }
-
+  
   return (
     <div className="flex flex-col justify-between h-full min-h-full bg-gray-100">
       <div className="container py-10 mx-auto">

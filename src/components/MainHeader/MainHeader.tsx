@@ -5,6 +5,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AppContext } from "../../contexts/app.context";
 import { faUser, faSignOutAlt, faInfoCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
+import { useContext, useState } from "react"
+import mainPath from "../../constants/path"
+import { Link, NavLink } from "react-router-dom"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { AppContext } from "../../contexts/app.context"
+import { faUser, faSignOutAlt, faInfoCircle } from "@fortawesome/free-solid-svg-icons"
+import classNames from "classnames"
 
 export default function MainHeader() {
   const { isAuthenticated, profile, handleLogout } = useContext(AppContext);
@@ -100,7 +107,9 @@ export default function MainHeader() {
       <div className="container flex justify-between w-full h-full">
         <div className="flex justify-start py-2 space-x-2">
           <img className="h-12 rounded" src="\images\HCMCUT_logo.png" alt="logo" />
-          <div className="flex items-center text-lg font-bold uppercase desktop:text-2xl">CNPM</div>
+          <Link to={mainPath.home} className="flex items-center text-lg font-bold uppercase desktop:text-2xl">
+          CNPM
+        </Link>
         </div>
 
         <div className="flex items-center justify-center flex-1">
