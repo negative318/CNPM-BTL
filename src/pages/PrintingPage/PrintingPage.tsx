@@ -111,10 +111,9 @@ export default function PrintingPage() {
         
           setPrintRequestData({
             ...printRequestData,
-            document: {filetype:"A4", start: 1, end: 10 }, // Cập nhật dữ liệu request
+            document: {filetype:"A4", start: 1, end: 1000 },
           });
   
-          // Cập nhật mặc định `pages` thành "all"
           setPrintSettings({
             ...printSettings,
             pages: `1-10`,
@@ -353,54 +352,90 @@ export default function PrintingPage() {
                 />
             </div>
       
-            <div className="space-y-4">
-              <Label htmlFor="paper-size">Cỡ giấy</Label>
-              <Select
-                value={printSettings.paperSize}
-                onValueChange={(value) =>
-                  setPrintSettings({ ...printSettings, paperSize: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn cỡ giấy" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="A4">A4</SelectItem>
-                  <SelectItem value="A3">A3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-      
-            <div className="space-y-4">
-        <Label htmlFor="pagePerSheet">Số trang mỗi mặt</Label>
-        <Select
-          value={printRequestData.pagePerSheet.toString()}
-          onValueChange={(value) =>
+            {/* Chọn cỡ giấy */}
+<div className="space-y-4">
+  <Label className="text-lg font-medium">Chọn cỡ giấy</Label>
+  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-2">
+    {["A4", "A3"].map((size) => {
+      const isSelected = printSettings.paperSize === size;
+
+      return (
+        <Button
+          key={size}
+          variant={isSelected ? "default" : "outline"}
+          className={`flex-col items-center h-auto p-4 space-y-2 border-2 rounded-lg transition-colors ${
+            isSelected
+              ? "bg-blue-100 border-blue-500 hover:bg-blue-200"
+              : "bg-white border-gray-300 hover:bg-gray-100"
+          }`}
+          onClick={() => {
+            setPrintSettings({ ...printSettings, paperSize: size });
             setPrintRequestData({
               ...printRequestData,
-              pagePerSheet: parseInt(value),
+              document: { ...printRequestData.document, filetype: size },
+            });
+          }}
+        >
+          <div className={`font-semibold ${isSelected ? "text-blue-600" : ""}`}>
+            {size}
+          </div>
+        </Button>
+      );
+    })}
+  </div>
+</div>
+      
+           {/* Chọn số trang mỗi mặt */}
+<div className="space-y-4">
+  <Label className="text-lg font-medium">Số trang mỗi mặt</Label>
+  <div className="grid grid-cols-3 gap-4 sm:grid-cols-3 lg:grid-cols-3">
+    {[1, 2, 4].map((pages) => {
+      const isSelected = printRequestData.pagePerSheet === pages;
+
+      return (
+        <Button
+          key={pages}
+          variant={isSelected ? "default" : "outline"}
+          className={`flex items-center justify-center h-auto p-4 space-y-2 border-2 rounded-lg transition-colors ${
+            isSelected
+              ? "bg-blue-100 border-blue-500 hover:bg-blue-200"
+              : "bg-white border-gray-300 hover:bg-gray-100"
+          }`}
+          onClick={() =>
+            setPrintRequestData({
+              ...printRequestData,
+              pagePerSheet: pages,
             })
           }
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn số trang mỗi mặt" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1">1 trang</SelectItem>
-            <SelectItem value="2">2 trang</SelectItem>
-            <SelectItem value="4">4 trang</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          <div className={`font-semibold ${isSelected ? "text-blue-600" : ""}`}>
+            {pages} trang
+          </div>
+        </Button>
+      );
+    })}
+  </div>
+</div>
+
       <div className="space-y-4">
         <Label htmlFor="pages">Trang cần in</Label>
         <Input
           id="pages"
           value={printSettings.pages}
-          onChange={(e) =>
-            setPrintSettings({ ...printSettings, pages: e.target.value })
-          }
-          placeholder={`Ví dụ: 1-5, 8, 11-13`}
+          onChange={(e) => {
+            const value = e.target.value;
+            const [start, end] = value.split('-').map((page) => parseInt(page.trim()));
+            setPrintSettings({ ...printSettings, pages: value });
+            setPrintRequestData({
+              ...printRequestData,
+              document: {
+                ...printRequestData.document,
+                start: start || 1,
+                end: end || 1000,
+              },
+            });
+          }}
+          placeholder="Ví dụ: 1-5, 8, 11-13"
         />
         <p className="text-sm text-gray-500">
           Mặc định: Tất cả các trang
@@ -488,7 +523,6 @@ export default function PrintingPage() {
   
 
   const handlePrintSubmit = async () => {
-    // Tạo mã tham chiếu mới
     const newReferenceCode = Math.floor(Math.random() * 100000000000).toString().padStart(11, '0');
     setReferenceCode(newReferenceCode);
   
@@ -519,9 +553,10 @@ export default function PrintingPage() {
       });
   
       if (response.status === 200) {
+        console.log(response.status)
         console.log('Print request successful:', response.data);
-        setShowSuccessDialog(true);
-        window.location.href = mainPath.historyBuyPage;
+        // setShowSuccessDialog(true);
+        window.location.href = mainPath.historyprintpage;
       } else {
         alert('Đã xảy ra lỗi không xác định.');
       }
@@ -531,7 +566,7 @@ export default function PrintingPage() {
       if (error instanceof AxiosError && error.response) {
         const { status, data } = error.response;
     
-        if (status === 400 && data.message === 'Không đủ giấy') {
+        if (status === 400 && data.message === "Paper not enough") {
           alert('Không đủ giấy! Vui lòng mua thêm.');
           window.location.href = mainPath.buypage;
         } else {
@@ -611,7 +646,7 @@ export default function PrintingPage() {
         </div>
         </CardContent>
       </Card>
-
+{/* 
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <DialogContent className="p-6 bg-white rounded-lg shadow-lg">
           <DialogHeader>
@@ -640,7 +675,7 @@ export default function PrintingPage() {
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
 
 
     </div>

@@ -9,6 +9,7 @@ const mainPath = {
     printingHistory: '/spso/printingHistory',
     info: '/info',
     buypage: '/buypage',
-    historyBuyPage: '/historybuypage'
+    historyBuyPage: '/historybuypage',
+    historyprintpage: '/historyprintpage',
 } as const
 export default mainPath
