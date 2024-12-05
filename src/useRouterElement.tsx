@@ -15,6 +15,7 @@ import BuyPage from "./pages/BuyPage";
 import HistoryBuyPage from "./pages/HistoryBuyPage";
 import HistoryPrintPage from "./pages/HistoryPrintPage";
 import SPSOReport from "./pages/SPSO/SPSOReport/SPSOReport";
+import AdminReportPage from "./pages/AdminReportPage";
 function RejectedRoute() {
   const { isAuthenticated } = useContext(AppContext);
 
@@ -119,10 +120,18 @@ export default function useRouteElements() {
           ),
         },
         {
-          path: mainPath.report,
+          path: mainPath.spsoreport,
           element: (
             <MainLayout>
               <SPSOReport />
+            </MainLayout>
+          ),
+        },
+        {
+          path: mainPath.adminreportpage,
+          element: (
+            <MainLayout>
+              <AdminReportPage />
             </MainLayout>
           ),
         },

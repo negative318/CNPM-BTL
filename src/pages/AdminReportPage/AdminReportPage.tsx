@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Table, Card, message, Radio } from "antd";
-import { AppContext } from "../../../contexts/app.context";
+import { AppContext } from "../../contexts/app.context";
 
 interface ReportData {
   key: string;
@@ -9,7 +9,7 @@ interface ReportData {
   url: string;
 }
 
-const SPSOReport: React.FC = () => {
+const AdminReportPage: React.FC = () => {
   const [data, setData] = useState<ReportData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [reportType, setReportType] = useState<"MONTHLY" | "ANNUALLY">(
@@ -108,4 +108,4 @@ const SPSOReport: React.FC = () => {
   );
 };
 
-export default SPSOReport;
+export default AdminReportPage;

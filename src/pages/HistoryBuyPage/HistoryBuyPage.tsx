@@ -10,21 +10,18 @@ interface Transaction {
 export default function HistoryBuyPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("2024-01-01");
+  const [endDate, setEndDate] = useState<string>("2025-01-01");
 
   const fetchTransactions = async () => {
-    if (!startDate || !endDate) {
-      alert("Vui lòng chọn ngày bắt đầu và kết thúc.");
-      return;
-    }
-
     setLoading(true);
     try {
-      const url = `http://localhost:8080/api/v1/payments/history/student_buy_pages?pageNumber=0&pageSize=5&startDate=${encodeURIComponent(
-        startDate
-      )}&endDate=${encodeURIComponent(endDate)}`;
-      console.log(url);
+      const formattedStartDate = `${startDate} 00:00:00`.replace(/ /g, "%20");
+      const formattedEndDate = `${endDate} 23:59:59`.replace(/ /g, "%20");
+
+      const url = `http://localhost:8080/api/v1/payments/history/student_buy_pages?pageNumber=0&pageSize=5&startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
+
+      console.log(url); // Debug URL
 
       const response = await fetch(url, {
         method: "GET",
@@ -33,12 +30,12 @@ export default function HistoryBuyPage() {
           Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
         },
       });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      // Gán dữ liệu từ API vào state
       setTransactions(data.studentPaymentDtoList || []);
     } catch (error) {
       console.error("Error fetching transaction data:", error);
@@ -46,6 +43,10 @@ export default function HistoryBuyPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">

@@ -28,34 +28,27 @@ export default function HistoryPrintPage() {
   const itemsPerPage = 10;
 
   const [logs, setLogs] = useState<Log[]>([]);
+  const [totalLogs, setTotalLogs] = useState(0); // Tổng số bản ghi để phân trang
 
   useEffect(() => {
-    const fetchAllLogs = async () => {
-      let allLogs: Log[] = [];
-      let pageNumber = 0;
-      const pageSize = 10;
-
+    const fetchLogsByPage = async () => {
+      setLoading(true);
       try {
-        while (true) {
-          const response = await axios.get<{ content: Log[] }>(
-            `http://localhost:8080/api/v1/printing/logs?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-            {
-              headers: {
-                Authorization: `Bearer ${profile?.jwtToken}`,
-              },
-            }
-          );
-          console.log(response);
-          const data = response.data.content;
-          if (data.length === 0) {
-            break;
+        const response = await axios.get<{
+          content: Log[];
+          totalElements: number;
+        }>(
+          `http://localhost:8080/api/v1/printing/logs?pageNumber=${
+            currentPage - 1
+          }&pageSize=${itemsPerPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${profile?.jwtToken}`,
+            },
           }
-
-          allLogs = [...allLogs, ...data];
-          pageNumber += 1;
-        }
-
-        setLogs(allLogs);
+        );
+        setLogs(response.data.content);
+        setTotalLogs(response.data.totalElements); // Lấy tổng số bản ghi
       } catch (error) {
         console.error("Error fetching logs:", error);
       } finally {
@@ -64,15 +57,11 @@ export default function HistoryPrintPage() {
     };
 
     if (profile?.jwtToken) {
-      fetchAllLogs();
+      fetchLogsByPage();
     }
-  }, [profile?.jwtToken]);
+  }, [profile?.jwtToken, currentPage]);
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentLogs = [...logs].reverse().slice(startIndex, endIndex);
-
-  const totalPages = Math.ceil(logs.length / itemsPerPage);
+  const totalPages = Math.ceil(totalLogs / itemsPerPage);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -128,11 +117,11 @@ export default function HistoryPrintPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentLogs.map((log, index) => (
+                    {logs.map((log) => (
                       <tr
                         key={log.id}
                         className={`text-center ${
-                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                          log.id % 2 === 0 ? "bg-gray-50" : "bg-white"
                         } hover:bg-gray-100`}
                       >
                         <td className="px-8 py-4 border border-gray-300">

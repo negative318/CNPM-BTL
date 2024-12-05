@@ -7,10 +7,11 @@ const mainPath = {
   modifyPrinter: "/spso/modifyPrinter",
   printerManagement: "/spso/priterManagement",
   printingHistory: "/spso/printingHistory",
-  report: "/spso/report",
+  spsoreport: "/spso/report",
   info: "/info",
   buypage: "/buypage",
   historyBuyPage: "/historybuypage",
   historyprintpage: "/historyprintpage",
+  adminreportpage: "/adminreportpage",
 } as const;
 export default mainPath;
