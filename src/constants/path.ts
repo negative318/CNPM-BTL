@@ -10,7 +10,7 @@ const mainPath = {
     report: '/spso/report',
     info: '/info',
     buypage: '/buypage',
-    historyBuyPage: '/historybuypage'
-    
+    historyBuyPage: '/historybuypage',
+    historyprintpage: '/historyprintpage',
 } as const
 export default mainPath

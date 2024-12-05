@@ -36,6 +36,8 @@ const ModifyPrinter: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!isAuthenticated || !profile) return;
   const fetchPrinters = async () => {
     if (!isAuthenticated || !profile || !selectedCampus) {
       message.warning("Vui lòng đăng nhập và chọn cơ sở để tiếp tục!");
@@ -127,7 +129,7 @@ const ModifyPrinter: React.FC = () => {
       // Định dạng dữ liệu máy in mới để thêm vào danh sách
       const formattedPrinter: Printer = {
         id: newPrinter.id,
-        status: "Khả dụng", // Máy in mới mặc định là khả dụng
+        status: "Khả dụng",
         campus: newPrinter.campusName,
         building: newPrinter.buildingName,
         location: `Phòng ${newPrinter.roomNumber}`,
