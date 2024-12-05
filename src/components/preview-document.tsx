@@ -1,47 +1,46 @@
-import { useEffect, useRef, useState } from "react"
-import { Document, Page, pdfjs } from "react-pdf"
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
-import { Button } from "./ui/button"
-import { Card } from "./ui/card"
+import { useEffect, useRef, useState } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
 
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface PreviewDocumentProps {
-  file: File
+  file: File;
 }
 
 export function PreviewDocument({ file }: PreviewDocumentProps) {
-  const [numPages, setNumPages] = useState<number>(0)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [scale, setScale] = useState(1)
-  const [url, setUrl] = useState<string>("")
+  const [numPages, setNumPages] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [scale, setScale] = useState(1);
+  const [url, setUrl] = useState<string>("");
 
   useEffect(() => {
-    const fileUrl = URL.createObjectURL(file)
-    setUrl(fileUrl)
-    return () => URL.revokeObjectURL(fileUrl)
-  }, [file])
+    const fileUrl = URL.createObjectURL(file);
+    setUrl(fileUrl);
+    return () => URL.revokeObjectURL(fileUrl);
+  }, [file]);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    setNumPages(numPages)
+    setNumPages(numPages);
   }
 
   const zoomIn = () => {
-    setScale((prev) => Math.min(prev + 0.1, 2))
-  }
+    setScale((prev) => Math.min(prev + 0.1, 2));
+  };
 
   const zoomOut = () => {
-    setScale((prev) => Math.max(prev - 0.1, 0.5))
-  }
+    setScale((prev) => Math.max(prev - 0.1, 0.5));
+  };
 
   const nextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, numPages))
-  }
+    setCurrentPage((prev) => Math.min(prev + 1, numPages));
+  };
 
   const previousPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1))
-  }
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -71,7 +70,7 @@ export function PreviewDocument({ file }: PreviewDocumentProps) {
           <Button variant="outline" size="icon" onClick={zoomOut}>
             <ZoomOut className="w-4 h-4" />
           </Button>
-          <span className="text-sm w-16 text-center">
+          <span className="w-16 text-sm text-center">
             {Math.round(scale * 100)}%
           </span>
           <Button variant="outline" size="icon" onClick={zoomIn}>
@@ -85,7 +84,9 @@ export function PreviewDocument({ file }: PreviewDocumentProps) {
           onLoadSuccess={onDocumentLoadSuccess}
           loading={
             <div className="flex items-center justify-center w-full h-full">
-              <span className="text-muted-foreground">Đang tải tài liệu...</span>
+              <span className="text-muted-foreground">
+                Đang tải tài liệu...
+              </span>
             </div>
           }
           error={
@@ -105,5 +106,5 @@ export function PreviewDocument({ file }: PreviewDocumentProps) {
         </Document>
       </div>
     </Card>
-  )
+  );
 }

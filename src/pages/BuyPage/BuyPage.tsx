@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import { AppContext } from "../../contexts/app.context";
+import mainPath from "../../constants/path";
 
 export default function BuyPage() {
   const calculatePrice = (pages: number): number => {
@@ -42,7 +43,7 @@ export default function BuyPage() {
       if (response.ok) {
         const result = await response.json();
         alert(result.message || "Thanh toán thành công!");
-        window.location.reload();
+        window.location.href = mainPath.historyBuyPage;
       } else {
         alert("Đã xảy ra lỗi trong quá trình thanh toán!");
       }

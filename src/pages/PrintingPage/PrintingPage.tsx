@@ -59,13 +59,8 @@ export default function PrintingPage() {
     { label: "Cơ sở Dĩ An Bình Dương", value: "DA" },
   ]);
   const [selectedCampus, setSelectedCampus] = useState("");
-
-  const [file, setFile] = useState(null);
-  const [fileUrl, setFileUrl] = useState(null);
-  const [numPages, setNumPages] = useState(0);
   GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-  //ủa
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
 
   const [printData, setPrintData] = useState<PrinterData[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState("");
@@ -115,12 +110,9 @@ export default function PrintingPage() {
         try {
           pdf = await getDocument(fileBlobUrl).promise;
           console.log("Chay được ồi>>>>", pdf.numPages);
-          setNumPages(pdf.numPages);
         } catch (error) {
           console.error("Error loading PDF:", error);
         }
-        //Ma thuật đen đó :)) ở dưới warning kệ nó /đ/i k sao đâu//từ từ, chờ t tí, lỗi đó là do nó chưa update hay sao đó,  mà khoan sao cái trên consolelog là pdf.numPages thì dưới cx phải z chứ, từ từm adu ngon ảo vcl z Bảo
-        //Ma thuật đen đó Dũng:)))))) ê mà giờ sao cái Bảo trì nó vẫn bấm đc z :)) à, là m mn nó k bấm đc đó he, oke, chờ tí
 
         setPrintRequestData({
           ...printRequestData,
@@ -303,7 +295,7 @@ export default function PrintingPage() {
                               });
                             }
                           }}
-                          disabled={printer.printerStatus !== "ON"} // gioâ~ còn cái overflowok t đang render hơi ngu nên nó render ra hơi lâu á
+                          disabled={printer.printerStatus !== "ON"}
                         >
                           <div
                             className={`font-semibold ${

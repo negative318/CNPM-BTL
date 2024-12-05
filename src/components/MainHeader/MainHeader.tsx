@@ -1,13 +1,12 @@
 import { useState, useContext } from "react";
 import mainPath from "../../constants/path";
-import { Link,NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AppContext } from "../../contexts/app.context";
 import {
   faUser,
   faSignOutAlt,
   faInfoCircle,
-  faCopy,
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 
@@ -19,6 +18,7 @@ export default function MainHeader() {
 
   const isSPSO = profile?.role === 2;
   const isStudent = profile?.role === 3;
+  const isAdmin = profile?.role === 1;
 
   const titleClassname =
     "text-lightText uppercase justify-center rounded-lg col-span-1 relative flex items-center font-medium px-6 hover:bg-hoveringBg";
@@ -53,17 +53,17 @@ export default function MainHeader() {
           })
         }
       >
-        Lịch sử in
+        Report
       </NavLink>
       <NavLink
-        to={mainPath.report}
+        to={mainPath.spsoreport}
         className={({ isActive }) =>
           classNames(titleClassname, {
             "bg-hoveringBg": isActive,
           })
         }
       >
-        Báo Cáo
+        Report
       </NavLink>
     </>
   );
@@ -113,6 +113,19 @@ export default function MainHeader() {
     </>
   );
 
+  const adminHeader = (
+    <NavLink
+      to={mainPath.adminreportpage}
+      className={({ isActive }) =>
+        classNames(titleClassname, {
+          "bg-hoveringBg": isActive,
+        })
+      }
+    >
+      Report
+    </NavLink>
+  );
+
   return (
     <div
       className="items-center justify-center w-full h-full bg-webColor500 text-lightText"
@@ -134,7 +147,6 @@ export default function MainHeader() {
         </div>
 
         <div className="flex items-center justify-center flex-1">
-          {/* Các mục header */}
           <div className="flex items-center gap-4">
             <NavLink
               to={mainPath.home}
@@ -150,6 +162,8 @@ export default function MainHeader() {
             {isSPSO && SPSOHeader}
 
             {isStudent && studentHeader}
+
+            {isAdmin && adminHeader}
 
             {isStudent && (
               <div className="flex items-center px-4 border-l border-gray-300">
