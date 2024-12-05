@@ -13,6 +13,7 @@ import { AppContext } from './contexts/app.context'
 import PrintingPage from './pages/PrintingPage'
 import BuyPage from './pages/BuyPage'
 import HistoryBuyPage from './pages/HistoryBuyPage'
+import Report from './pages/SPSO/Report'
 
 
 
@@ -112,6 +113,14 @@ function RejectedRoute() {
                     <PrintingHistory />
                 </MainLayout>
             )
+        },
+        {
+          path: mainPath.report,
+          element: (
+              <MainLayout>
+                  <Report />
+              </MainLayout>
+          )
         },
         ],
       },

@@ -53,6 +53,16 @@ export default function MainHeader() {
       >
         Lịch sử in
       </NavLink>
+      <NavLink
+        to={mainPath.report}
+        className={({ isActive }) =>
+          classNames(titleClassname, {
+            "bg-hoveringBg": isActive,
+          })
+        }
+      >
+        Báo Cáo
+      </NavLink>
     </>
   );
 
