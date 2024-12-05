@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-// Định nghĩa kiểu dữ liệu
 interface Transaction {
   payDate: string;
   numberOfPages: number;
@@ -10,41 +9,43 @@ interface Transaction {
 
 export default function HistoryBuyPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const startDate = "2024-12-03T00:00:00";
-        const endDate = "2024-12-10T23:59:59";
-        const url = `http://localhost:8080/api/v1/payments/history/student_buy_pages?pageNumber=0&pageSize=5&startDate=${encodeURIComponent(
-          startDate
-        )}&endDate=${encodeURIComponent(endDate)}`;
-        console.log(url);
+  const fetchTransactions = async () => {
+    if (!startDate || !endDate) {
+      alert("Vui lòng chọn ngày bắt đầu và kết thúc.");
+      return;
+    }
 
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+    setLoading(true);
+    try {
+      const url = `http://localhost:8080/api/v1/payments/history/student_buy_pages?pageNumber=0&pageSize=5&startDate=${encodeURIComponent(
+        startDate
+      )}&endDate=${encodeURIComponent(endDate)}`;
+      console.log(url);
 
-        const data = await response.json();
-        // Gán dữ liệu từ API vào state
-        setTransactions(data.studentPaymentDtoList || []);
-      } catch (error) {
-        console.error("Error fetching transaction data:", error);
-      } finally {
-        setLoading(false);
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
 
-    fetchData();
-  }, []);
+      const data = await response.json();
+      // Gán dữ liệu từ API vào state
+      setTransactions(data.studentPaymentDtoList || []);
+    } catch (error) {
+      console.error("Error fetching transaction data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -52,6 +53,41 @@ export default function HistoryBuyPage() {
         <h1 className="mb-8 text-4xl font-bold tracking-wide text-center text-blue-600 uppercase">
           Lịch Sử Mua Giấy
         </h1>
+
+        <div className="flex justify-center gap-4 mb-6">
+          <div>
+            <label className="block mb-2 font-medium text-gray-600">
+              Ngày bắt đầu
+            </label>
+            <input
+              type="date"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 font-medium text-gray-600">
+              Ngày kết thúc
+            </label>
+            <input
+              type="date"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
+
+          <div className="self-end">
+            <button
+              className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none"
+              onClick={fetchTransactions}
+            >
+              Lấy dữ liệu
+            </button>
+          </div>
+        </div>
 
         <div className="w-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl">
           <h2 className="py-4 text-2xl font-semibold text-center text-white bg-gradient-to-r from-blue-400 to-blue-600">

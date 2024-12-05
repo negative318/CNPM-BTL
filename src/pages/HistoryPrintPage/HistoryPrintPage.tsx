@@ -239,5 +239,3 @@ export default function HistoryPrintPage() {
     </div>
   );
 }
-
-//chờ tí, để t quăng qua máy phátoke bảo

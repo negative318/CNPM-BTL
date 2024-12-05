@@ -99,14 +99,13 @@ const ModifyPrinter: React.FC = () => {
     const handleAddPrinter = async (values: any) => {
       setLoading(true);
       try {
-        const token = profile?.jwtToken || ""; // Lấy JWT Token từ profile
+        const token = profile?.jwtToken || "";
         if (!token) {
           throw new Error(
             "Token xác thực không hợp lệ. Vui lòng đăng nhập lại."
           );
         }
 
-        // Cấu trúc payload theo yêu cầu
         const payload = {
           model: values.model.trim(),
           description: values.description.trim(),
@@ -116,7 +115,6 @@ const ModifyPrinter: React.FC = () => {
           roomNumber: values.roomNumber.trim(),
         };
 
-        // Thực hiện POST request
         const response = await fetch("http://localhost:8080/api/v1/printers", {
           method: "POST",
           headers: {
@@ -126,7 +124,6 @@ const ModifyPrinter: React.FC = () => {
           body: JSON.stringify(payload),
         });
 
-        // Kiểm tra kết quả response
         if (!response.ok) {
           const errorResponse = await response.json();
           throw new Error(errorResponse.message || "Không thể thêm máy in!");
@@ -134,7 +131,6 @@ const ModifyPrinter: React.FC = () => {
 
         const newPrinter = await response.json();
 
-        // Định dạng dữ liệu máy in mới để thêm vào danh sách
         const formattedPrinter: Printer = {
           id: newPrinter.id,
           status: "Khả dụng",
@@ -143,11 +139,9 @@ const ModifyPrinter: React.FC = () => {
           location: `Phòng ${newPrinter.roomNumber}`,
         };
 
-        // Cập nhật danh sách máy in
         setPrinterData([...printerData, formattedPrinter]);
         setFilteredPrinters([...filteredPrinters, formattedPrinter]);
 
-        // Đóng modal, reset form và thông báo thành công
         setIsModalVisible(false);
         form.resetFields();
         message.success("Thêm máy in thành công!");
@@ -171,15 +165,13 @@ const ModifyPrinter: React.FC = () => {
           );
         }
 
-        const printer = printerData.find((p) => p.id === printerId); // Tìm máy in theo ID
+        const printer = printerData.find((p) => p.id === printerId);
         if (!printer) {
           throw new Error("Không tìm thấy máy in để cập nhật.");
         }
 
-        // Đảo ngược trạng thái hiện tại của máy in
         const newStatus = printer.status === "Khả dụng" ? "OFF" : "ON";
 
-        // Cấu trúc body cho PUT request
         const payload = {
           brand: null,
           buildingName: printer.building,
@@ -191,7 +183,6 @@ const ModifyPrinter: React.FC = () => {
           max: 200,
         };
 
-        // Thực hiện PUT request
         const response = await fetch(
           `http://localhost:8080/api/v1/printers/${printerId}`,
           {
@@ -204,7 +195,6 @@ const ModifyPrinter: React.FC = () => {
           }
         );
 
-        // Kiểm tra kết quả response
         if (!response.ok) {
           const errorResponse = await response.json();
           throw new Error(
@@ -214,7 +204,6 @@ const ModifyPrinter: React.FC = () => {
 
         const updatedPrinter = await response.json();
 
-        // Cập nhật danh sách máy in sau khi thay đổi
         setPrinterData((prev) =>
           prev.map((p) =>
             p.id === printerId
