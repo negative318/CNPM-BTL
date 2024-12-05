@@ -1,17 +1,10 @@
 import { useState, useContext } from "react";
 import mainPath from "../../constants/path";
-import { NavLink } from "react-router-dom";
+import { Link,NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AppContext } from "../../contexts/app.context";
 import { faUser, faSignOutAlt, faInfoCircle, faCopy } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
-import { useContext, useState } from "react"
-import mainPath from "../../constants/path"
-import { Link, NavLink } from "react-router-dom"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { AppContext } from "../../contexts/app.context"
-import { faUser, faSignOutAlt, faInfoCircle } from "@fortawesome/free-solid-svg-icons"
-import classNames from "classnames"
 
 export default function MainHeader() {
   const { isAuthenticated, profile, handleLogout } = useContext(AppContext);
