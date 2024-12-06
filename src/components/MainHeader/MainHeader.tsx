@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import mainPath from "../../constants/path";
 import { Link, NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,11 +14,41 @@ export default function MainHeader() {
   const { isAuthenticated, profile, handleLogout } = useContext(AppContext);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const [paperCount, setPaperCount] = useState(50);
+  // State để lưu số lượng tờ từ API
+  const [paperCount, setPaperCount] = useState(null);
 
+  // Role logic
   const isSPSO = profile?.role === 2;
   const isStudent = profile?.role === 3;
   const isAdmin = profile?.role === 1;
+
+  useEffect(() => {
+    if (isStudent) {
+      const fetchPaperCount = async () => {
+        try {
+          const response = await fetch(
+            "http://localhost:8080/api/v1/payments/student/num_pages",
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+              },
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            setPaperCount(data.studentNumRemained);
+          } else {
+            console.error("Failed to fetch paper count:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching paper count:", error);
+        }
+      };
+
+      fetchPaperCount();
+    }
+  }, [isStudent]);
 
   const titleClassname =
     "text-lightText uppercase justify-center rounded-lg col-span-1 relative flex items-center font-medium px-6 hover:bg-hoveringBg";
@@ -53,7 +83,7 @@ export default function MainHeader() {
           })
         }
       >
-        Report
+        Report của máy
       </NavLink>
       <NavLink
         to={mainPath.spsoreport}
@@ -63,7 +93,7 @@ export default function MainHeader() {
           })
         }
       >
-        Report
+        Report hàng tháng/năm
       </NavLink>
     </>
   );
@@ -165,7 +195,7 @@ export default function MainHeader() {
 
             {isAdmin && adminHeader}
 
-            {isStudent && (
+            {isStudent && paperCount !== null && (
               <div className="flex items-center px-4 border-l border-gray-300">
                 <div className="flex items-center justify-center w-20 h-8 bg-gray-200 rounded-full">
                   <span className="font-semibold text-webColor500">

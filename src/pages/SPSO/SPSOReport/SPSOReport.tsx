@@ -47,7 +47,7 @@ const SPSOReport: React.FC = () => {
           key: item.id.toString(),
           reportDate: new Date(item.reportDate).toLocaleString(),
           reportType: item.reportType,
-          url: `http://localhost:8080${item.url}`, // Nối thêm URL gốc
+          url: `http://localhost:8080${item.url}`,
         }));
 
         setData(formattedData);

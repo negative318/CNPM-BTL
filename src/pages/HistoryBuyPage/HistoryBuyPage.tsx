@@ -21,7 +21,7 @@ export default function HistoryBuyPage() {
 
       const url = `http://localhost:8080/api/v1/payments/history/student_buy_pages?pageNumber=0&pageSize=5&startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
 
-      console.log(url); // Debug URL
+      console.log(url);
 
       const response = await fetch(url, {
         method: "GET",

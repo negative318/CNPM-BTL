@@ -572,12 +572,14 @@ export default function PrintingPage() {
     const formData = new FormData();
 
     formData.append("file", uploadedFiles[0]);
-
+    console.log("1111");
     const blobConfig = new Blob([JSON.stringify(configuration)], {
       type: "application/json",
     });
     formData.append("configuration", blobConfig);
     try {
+      console.log("222222222");
+      console.log(formData);
       const response = await axios.post(
         "http://localhost:8080/api/v1/printing",
         formData,
@@ -588,7 +590,7 @@ export default function PrintingPage() {
           },
         }
       );
-
+      console.log("33333333");
       if (response.status === 200) {
         console.log(response.status);
         console.log("Print request successful:", response.data);
