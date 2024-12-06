@@ -28,7 +28,7 @@ export default function HistoryPrintPage() {
   const itemsPerPage = 10;
 
   const [logs, setLogs] = useState<Log[]>([]);
-  const [totalLogs, setTotalLogs] = useState(0); // Tổng số bản ghi để phân trang
+  const [totalLogs, setTotalLogs] = useState(0);
 
   useEffect(() => {
     const fetchLogsByPage = async () => {
@@ -48,7 +48,7 @@ export default function HistoryPrintPage() {
           }
         );
         setLogs(response.data.content);
-        setTotalLogs(response.data.totalElements); // Lấy tổng số bản ghi
+        setTotalLogs(response.data.totalElements);
       } catch (error) {
         console.error("Error fetching logs:", error);
       } finally {
@@ -85,105 +85,108 @@ export default function HistoryPrintPage() {
             <LoadingPage />
           ) : (
             <>
-              <div className="lich-su-in">
-                <div className="table-container"></div>
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="text-blue-800 bg-blue-200">
-                      <th className="px-8 py-4 border border-blue-300">
-                        Tên file
-                      </th>
-                      <th className="px-8 py-4 border border-blue-300">
-                        Trạng thái
-                      </th>
-                      <th className="px-8 py-4 border border-blue-300">
-                        Ngày dự kiến lấy
-                      </th>
-                      <th className="px-8 py-4 border border-blue-300">
-                        Thời gian bắt đầu
-                      </th>
-                      <th className="px-8 py-4 border border-blue-300">
-                        Thời gian kết thúc
-                      </th>
-                      <th className="px-8 py-4 border border-blue-300">
-                        Số trang mỗi tờ
-                      </th>
-                      <th className="px-8 py-4 border border-blue-300">
-                        Số bản sao
-                      </th>
-                      <th className="px-8 py-4 border border-blue-300">
-                        Tài liệu
-                      </th>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="text-blue-800 bg-blue-200">
+                    <th className="px-4 py-4 border border-blue-300">
+                      Tên file
+                    </th>
+                    <th className="px-4 py-4 border border-blue-300">
+                      Trạng thái
+                    </th>
+                    <th className="px-4 py-4 border border-blue-300">
+                      Ngày dự kiến lấy
+                    </th>
+                    <th className="px-4 py-4 border border-blue-300">
+                      Thời gian bắt đầu
+                    </th>
+                    <th className="px-4 py-4 border border-blue-300">
+                      Thời gian kết thúc
+                    </th>
+                    <th className="px-4 py-4 border border-blue-300">
+                      Số trang mỗi tờ
+                    </th>
+                    <th className="px-4 py-4 border border-blue-300">
+                      Số bản sao
+                    </th>
+                    <th className="px-4 py-4 border border-blue-300">
+                      Số giấy in
+                    </th>
+                    <th className="px-4 py-4 border border-blue-300">
+                      Tài liệu
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map((log) => (
+                    <tr
+                      key={log.id}
+                      className={`text-center ${
+                        log.id % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      } hover:bg-gray-100`}
+                    >
+                      <td className="px-4 py-4 border border-gray-300">
+                        {log.logDescription}
+                      </td>
+                      <td className="px-4 py-4 font-semibold border border-gray-300">
+                        {log.logStatus === "SUCCESSFUL" ? (
+                          <span className="text-green-600">Thành công</span>
+                        ) : log.logStatus === "PENDING" ? (
+                          <span className="text-yellow-600">Đang chờ in</span>
+                        ) : (
+                          <span className="text-red-600">Thất bại</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 border border-gray-300">
+                        {log.logDate
+                          ? format(new Date(log.logDate), "dd/MM/yyyy HH:mm:ss")
+                          : "N/A"}
+                      </td>
+                      <td className="px-4 py-4 border border-gray-300">
+                        {log.logStartTime
+                          ? format(
+                              new Date(log.logStartTime),
+                              "dd/MM/yyyy HH:mm:ss"
+                            )
+                          : "N/A"}
+                      </td>
+                      <td className="px-4 py-4 border border-gray-300">
+                        {log.logEndTime
+                          ? format(
+                              new Date(log.logEndTime),
+                              "dd/MM/yyyy HH:mm:ss"
+                            )
+                          : "N/A"}
+                      </td>
+                      <td className="px-4 py-4 border border-gray-300">
+                        {log.pagePerSheet}
+                      </td>
+                      <td className="px-4 py-4 border border-gray-300">
+                        {log.numberOfCopy}
+                      </td>
+                      <td className="px-4 py-4 border border-gray-300">
+                        {log.document?.start !== undefined &&
+                        log.document?.end !== undefined
+                          ? log.document.end - log.document.start + 1
+                          : "N/A"}
+                      </td>
+                      <td className="px-4 py-4 border border-gray-300">
+                        <a
+                          href={`http://localhost:8080${log.document?.url.replace(
+                            "/public",
+                            ""
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline hover:text-blue-800"
+                        >
+                          Tải tài liệu
+                        </a>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {logs.map((log) => (
-                      <tr
-                        key={log.id}
-                        className={`text-center ${
-                          log.id % 2 === 0 ? "bg-gray-50" : "bg-white"
-                        } hover:bg-gray-100`}
-                      >
-                        <td className="px-8 py-4 border border-gray-300">
-                          {log.logDescription}
-                        </td>
-                        <td className="px-8 py-4 font-semibold border border-gray-300">
-                          {log.logStatus === "SUCCESSFUL" ? (
-                            <span className="text-green-600">Thành công</span>
-                          ) : log.logStatus === "PENDING" ? (
-                            <span className="text-yellow-600">Đang chờ in</span>
-                          ) : (
-                            <span className="text-red-600">Thất bại</span>
-                          )}
-                        </td>
-                        <td className="px-8 py-4 border border-gray-300">
-                          {log.logDate
-                            ? format(
-                                new Date(log.logDate),
-                                "dd/MM/yyyy HH:mm:ss"
-                              )
-                            : "N/A"}
-                        </td>
-                        <td className="px-8 py-4 border border-gray-300">
-                          {log.logStartTime
-                            ? format(
-                                new Date(log.logStartTime),
-                                "dd/MM/yyyy HH:mm:ss"
-                              )
-                            : "N/A"}
-                        </td>
-                        <td className="px-8 py-4 border border-gray-300">
-                          {log.logEndTime
-                            ? format(
-                                new Date(log.logEndTime),
-                                "dd/MM/yyyy HH:mm:ss"
-                              )
-                            : "N/A"}
-                        </td>
-                        <td className="px-8 py-4 border border-gray-300">
-                          {log.pagePerSheet}
-                        </td>
-                        <td className="px-8 py-4 border border-gray-300">
-                          {log.numberOfCopy}
-                        </td>
-                        <td className="px-8 py-4 border border-gray-300">
-                          <a
-                            href={`http://localhost:8080${log.document?.url.replace(
-                              "/public",
-                              ""
-                            )}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 underline hover:text-blue-800"
-                          >
-                            Tải tài liệu
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
 
               {/* Pagination Controls */}
               <div className="flex justify-center mt-4">
