@@ -37,64 +37,11 @@ const ModifyPrinter: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthenticated || !profile) return;
-    const fetchPrinters = async () => {
-      if (!isAuthenticated || !profile || !selectedCampus) {
-        message.warning("Vui lòng đăng nhập và chọn cơ sở để tiếp tục!");
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const token = profile?.jwtToken || "";
-        const response = await fetch(
-          `http://localhost:8080/api/v1/printers/status?location=${selectedCampus}&pageNumber=0&pageSize=10`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errorResponse = await response.json();
-          throw new Error(
-            errorResponse.message || "Không thể tải dữ liệu máy in!"
-          );
-        }
-
-        const data = await response.json();
-        const formattedPrinters: Printer[] = data.content.map(
-          (printer: any) => ({
-            id: printer.id,
-            status: printer.printerStatus === "ON" ? "Khả dụng" : "Bảo trì",
-            campus: printer.campusName,
-            building: printer.buildingName,
-            location: `Phòng ${printer.roomNumber}`,
-          })
-        );
-
-        if (formattedPrinters.length === 0) {
-          message.info("Không tìm thấy máy in nào.");
-        }
-
-        setPrinterData(formattedPrinters);
-        setFilteredPrinters(formattedPrinters);
-      } catch (error: any) {
-        console.error("Lỗi khi tải dữ liệu máy in:", error);
-        message.error(error.message || "Không thể tải dữ liệu máy in!");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    useEffect(() => {
-      fetchPrinters();
-    }, [isAuthenticated, profile, selectedCampus]);
+  const fetchPrinters = async () => {
+    if (!isAuthenticated || !profile || !selectedCampus) {
+      message.warning("Vui lòng đăng nhập và chọn cơ sở để tiếp tục!");
+      return;
+    }
 
     const handleAddPrinter = async (values: any) => {
       setLoading(true);
@@ -142,16 +89,79 @@ const ModifyPrinter: React.FC = () => {
         setPrinterData([...printerData, formattedPrinter]);
         setFilteredPrinters([...filteredPrinters, formattedPrinter]);
 
-        setIsModalVisible(false);
-        form.resetFields();
-        message.success("Thêm máy in thành công!");
-      } catch (error: any) {
-        console.error("Lỗi khi thêm máy in:", error);
-        message.error(
-          error.message || "Không thể thêm máy in. Vui lòng thử lại!"
-        );
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    fetchPrinters();
+  }, [isAuthenticated, profile, selectedCampus]);
+
+  const handleAddPrinter = async (values: any) => {
+    setLoading(true);
+    try {
+      const token = profile?.jwtToken || ""; // Lấy JWT Token từ profile
+      if (!token) {
+        throw new Error("Token xác thực không hợp lệ. Vui lòng đăng nhập lại.");
+      }
+  
+      // Cấu trúc payload theo yêu cầu
+      const payload = {
+        model: values.model.trim(),
+        description: values.description.trim(),
+        brand: values.brand.trim(),
+        buildingName: values.buildingName.trim(),
+        campusName: values.campusName,
+        roomNumber: values.roomNumber.trim(),
+      };
+  
+      // Thực hiện POST request
+      const response = await fetch("http://localhost:8080/api/v1/printers", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      // Kiểm tra kết quả response
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || "Không thể thêm máy in!");
+      }
+  
+      const newPrinter = await response.json();
+  
+      // Định dạng dữ liệu máy in mới để thêm vào danh sách
+      const formattedPrinter: Printer = {
+        id: newPrinter.id,
+        status: "Khả dụng", // Máy in mới mặc định là khả dụng
+        campus: newPrinter.campusName,
+        building: newPrinter.buildingName,
+        location: `Phòng ${newPrinter.roomNumber}`,
+      };
+  
+      // Cập nhật danh sách máy in
+      setPrinterData([...printerData, formattedPrinter]);
+      setFilteredPrinters([...filteredPrinters, formattedPrinter]);
+  
+      // Đóng modal, reset form và thông báo thành công
+      setIsModalVisible(false);
+      form.resetFields();
+      message.success("Thêm máy in thành công!");
+    } catch (error: any) {
+      console.error("Lỗi khi thêm máy in:", error);
+      message.error(error.message || "Không thể thêm máy in. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
+
+  const handleTogglePrinterStatus = async (printerId: number) => {
+    setLoading(true);
+    try {
+      const token = profile?.jwtToken || ""; // Lấy JWT Token từ profile
+      if (!token) {
+        throw new Error("Token xác thực không hợp lệ. Vui lòng đăng nhập lại.");
       }
     };
 
