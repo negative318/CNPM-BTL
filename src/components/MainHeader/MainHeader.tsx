@@ -227,9 +227,12 @@ export default function MainHeader() {
                   </div>
                 )}
                 {walletBalance !== null && (
-                  <div className="flex items-center justify-center px-3 py-1 font-semibold text-white rounded-full shadow-md bg-gradient-to-r from-yellow-400 to-orange-500">
+                  <Link
+                    to={mainPath.depositpage}
+                    className="flex items-center justify-center px-3 py-1 font-semibold text-white rounded-full shadow-md cursor-pointer bg-gradient-to-r from-yellow-400 to-orange-500 hover:bg-orange-600"
+                  >
                     <span>{walletBalance} VNĐ</span>
-                  </div>
+                  </Link>
                 )}
               </div>
             )}

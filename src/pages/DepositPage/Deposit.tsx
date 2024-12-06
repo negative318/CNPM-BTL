@@ -4,6 +4,16 @@ export default function Depositpage() {
   const [amount, setAmount] = useState<number>(10000); // Giá trị mặc định 10,000 VNĐ
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false); // Trạng thái hiển thị modal
+
+  // Hàm định dạng tiền
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      minimumFractionDigits: 0,
+    }).format(value);
+  };
 
   const handleAddMoney = async () => {
     setLoading(true);
@@ -25,12 +35,18 @@ export default function Depositpage() {
 
       const data = await response.json();
       setMessage(data.message || "Nạp tiền thành công!");
+      setShowModal(true); // Hiển thị modal sau khi nạp thành công
     } catch (error) {
       setMessage("Có lỗi xảy ra khi nạp tiền. Vui lòng thử lại.");
       console.error("Error adding money:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    window.location.reload(); // Reload trang sau khi đóng modal
   };
 
   return (
@@ -46,12 +62,13 @@ export default function Depositpage() {
               Số tiền cần nạp (VNĐ):
             </span>
             <input
-              type="number"
+              type="text"
               className="block w-full px-4 py-2 mt-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              min={10000}
-              step={1000}
+              value={formatCurrency(amount)} // Hiển thị định dạng tiền
+              onChange={(e) => {
+                const rawValue = e.target.value.replace(/[^0-9]/g, ""); // Xóa ký tự không phải số
+                setAmount(Number(rawValue)); // Cập nhật giá trị thực tế
+              }}
             />
           </label>
 
@@ -65,7 +82,7 @@ export default function Depositpage() {
             {loading ? "Đang xử lý..." : "Nạp tiền"}
           </button>
 
-          {message && (
+          {message && !showModal && (
             <p
               className={`mt-4 text-center ${
                 message.includes("thành công")
@@ -78,6 +95,23 @@ export default function Depositpage() {
           )}
         </div>
       </div>
+
+      {/* Modal hiển thị thông báo thành công */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="p-6 bg-white rounded-lg shadow-xl">
+            <h2 className="mb-4 text-lg font-semibold text-center text-gray-700">
+              {message}
+            </h2>
+            <button
+              className="w-full px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+              onClick={handleModalClose}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
