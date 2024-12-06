@@ -12,6 +12,8 @@ export default function HistoryBuyPage() {
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState<string>("2024-01-01");
   const [endDate, setEndDate] = useState<string>("2025-01-01");
+  const [pageNumber, setPageNumber] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -19,7 +21,7 @@ export default function HistoryBuyPage() {
       const formattedStartDate = `${startDate} 00:00:00`.replace(/ /g, "%20");
       const formattedEndDate = `${endDate} 23:59:59`.replace(/ /g, "%20");
 
-      const url = `http://localhost:8080/api/v1/payments/history/student_buy_pages?pageNumber=0&pageSize=5&startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
+      const url = `http://localhost:8080/api/v1/payments/history/student_buy_pages?pageNumber=${pageNumber}&pageSize=5&startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
 
       console.log(url);
 
@@ -37,6 +39,7 @@ export default function HistoryBuyPage() {
 
       const data = await response.json();
       setTransactions(data.studentPaymentDtoList || []);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error("Error fetching transaction data:", error);
     } finally {
@@ -46,7 +49,7 @@ export default function HistoryBuyPage() {
 
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  }, [pageNumber, startDate, endDate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -83,7 +86,7 @@ export default function HistoryBuyPage() {
           <div className="self-end">
             <button
               className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none"
-              onClick={fetchTransactions}
+              onClick={() => setPageNumber(0)}
             >
               Lấy dữ liệu
             </button>
@@ -100,53 +103,78 @@ export default function HistoryBuyPage() {
               Đang tải dữ liệu...
             </p>
           ) : (
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="text-blue-800 bg-blue-200">
-                  <th className="px-6 py-3 border border-blue-300">
-                    Thời gian
-                  </th>
-                  <th className="px-6 py-3 border border-blue-300">Số trang</th>
-                  <th className="px-6 py-3 border border-blue-300">
-                    Thành tiền
-                  </th>
-                  <th className="px-6 py-3 border border-blue-300">
-                    Trạng thái
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((transaction, index) => (
-                  <tr
-                    key={index}
-                    className={`text-center ${
-                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                    } hover:bg-gray-100`}
-                  >
-                    <td className="px-6 py-3 border border-gray-300">
-                      {new Date(transaction.payDate).toLocaleString("vi-VN")}
-                    </td>
-                    <td className="px-6 py-3 border border-gray-300">
-                      {transaction.numberOfPages}
-                    </td>
-                    <td className="px-6 py-3 border border-gray-300">
-                      {transaction.payCost.toLocaleString("vi-VN")} VNĐ
-                    </td>
-                    <td
-                      className={`px-6 py-3 border border-gray-300 font-semibold ${
-                        transaction.status === "COMPLETED"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {transaction.status === "COMPLETED"
-                        ? "Thành công"
-                        : "Thất bại"}
-                    </td>
+            <>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="text-blue-800 bg-blue-200">
+                    <th className="px-6 py-3 border border-blue-300">
+                      Thời gian
+                    </th>
+                    <th className="px-6 py-3 border border-blue-300">
+                      Số trang
+                    </th>
+                    <th className="px-6 py-3 border border-blue-300">
+                      Thành tiền
+                    </th>
+                    <th className="px-6 py-3 border border-blue-300">
+                      Trạng thái
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {transactions.map((transaction, index) => (
+                    <tr
+                      key={index}
+                      className={`text-center ${
+                        index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      } hover:bg-gray-100`}
+                    >
+                      <td className="px-6 py-3 border border-gray-300">
+                        {new Date(transaction.payDate).toLocaleString("vi-VN")}
+                      </td>
+                      <td className="px-6 py-3 border border-gray-300">
+                        {transaction.numberOfPages}
+                      </td>
+                      <td className="px-6 py-3 border border-gray-300">
+                        {transaction.payCost.toLocaleString("vi-VN")} VNĐ
+                      </td>
+                      <td
+                        className={`px-6 py-3 border border-gray-300 font-semibold ${
+                          transaction.status === "COMPLETED"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {transaction.status === "COMPLETED"
+                          ? "Thành công"
+                          : "Thất bại"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Pagination Controls */}
+              <div className="flex justify-between px-4 py-2 bg-gray-100">
+                <button
+                  className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                  disabled={pageNumber === 0}
+                  onClick={() => setPageNumber((prev) => Math.max(prev - 1, 0))}
+                >
+                  Trang trước
+                </button>
+                <span>
+                  Trang {pageNumber + 1} / {totalPages}
+                </span>
+                <button
+                  className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                  disabled={pageNumber >= totalPages - 1}
+                  onClick={() => setPageNumber((prev) => prev + 1)}
+                >
+                  Trang sau
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
