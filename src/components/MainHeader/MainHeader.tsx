@@ -17,6 +17,9 @@ export default function MainHeader() {
   // State để lưu số lượng tờ từ API
   const [paperCount, setPaperCount] = useState(null);
 
+  // State để lưu số tiền từ API
+  const [walletBalance, setWalletBalance] = useState(null);
+
   // Role logic
   const isSPSO = profile?.role === 2;
   const isStudent = profile?.role === 3;
@@ -46,7 +49,30 @@ export default function MainHeader() {
         }
       };
 
+      const fetchWalletBalance = async () => {
+        try {
+          const response = await fetch(
+            "http://localhost:8080/api/v1/payments/get_wallet",
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+              },
+            }
+          );
+          const data = await response.json();
+          if (response.ok) {
+            setWalletBalance(data.studentWallet);
+          } else {
+            console.error("Failed to fetch wallet balance:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching wallet balance:", error);
+        }
+      };
+
       fetchPaperCount();
+      fetchWalletBalance();
     }
   }, [isStudent]);
 
@@ -193,15 +219,18 @@ export default function MainHeader() {
 
             {isStudent && studentHeader}
 
-            {isAdmin && adminHeader}
-
-            {isStudent && paperCount !== null && (
-              <div className="flex items-center px-4 border-l border-gray-300">
-                <div className="flex items-center justify-center w-20 h-8 bg-gray-200 rounded-full">
-                  <span className="font-semibold text-webColor500">
-                    {paperCount} tờ
-                  </span>
-                </div>
+            {isStudent && (
+              <div className="flex items-center px-4 space-x-4 border-l border-gray-300">
+                {paperCount !== null && (
+                  <div className="flex items-center justify-center px-3 py-1 font-semibold text-white rounded-full shadow-md bg-gradient-to-r from-blue-500 to-green-400">
+                    <span>{paperCount} tờ</span>
+                  </div>
+                )}
+                {walletBalance !== null && (
+                  <div className="flex items-center justify-center px-3 py-1 font-semibold text-white rounded-full shadow-md bg-gradient-to-r from-yellow-400 to-orange-500">
+                    <span>{walletBalance} VNĐ</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

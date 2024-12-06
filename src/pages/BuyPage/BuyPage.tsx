@@ -39,13 +39,14 @@ export default function BuyPage() {
           body: JSON.stringify(requestBody),
         }
       );
-
-      if (response.ok) {
-        const result = await response.json();
+      const result = await response.json();
+      console.log(response);
+      if (result.message == "Not enough money!") {
+        alert(result.message || "Số dư không đủ, vui lòng nạp tiền!");
+        window.location.href = mainPath.depositpage;
+      } else {
         alert(result.message || "Thanh toán thành công!");
         window.location.href = mainPath.historyBuyPage;
-      } else {
-        alert("Đã xảy ra lỗi trong quá trình thanh toán!");
       }
     } catch (error) {
       alert("Không thể kết nối đến server!");

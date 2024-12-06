@@ -13,5 +13,6 @@ const mainPath = {
   historyBuyPage: "/historybuypage",
   historyprintpage: "/historyprintpage",
   adminreportpage: "/adminreportpage",
+  depositpage: "/depositpage",
 } as const;
 export default mainPath;

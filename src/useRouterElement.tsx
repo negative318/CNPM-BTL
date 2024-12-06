@@ -16,6 +16,7 @@ import HistoryBuyPage from "./pages/HistoryBuyPage";
 import HistoryPrintPage from "./pages/HistoryPrintPage";
 import SPSOReport from "./pages/SPSO/SPSOReport/SPSOReport";
 import AdminReportPage from "./pages/AdminReportPage";
+import Depositpage from "./pages/DepositPage/Deposit";
 function RejectedRoute() {
   const { isAuthenticated } = useContext(AppContext);
 
@@ -92,6 +93,14 @@ export default function useRouteElements() {
           element: (
             <MainLayout>
               <ModifyPrinter />
+            </MainLayout>
+          ),
+        },
+        {
+          path: mainPath.depositpage,
+          element: (
+            <MainLayout>
+              <Depositpage />
             </MainLayout>
           ),
         },
